@@ -1,0 +1,7 @@
+cargar jugadores con dni 
+y calcular de acuerdo al dni cuanto debe pagar cada uno
+
+reportes de pagos
+
+creacion de cupones en caso de reprogramacion.
+
