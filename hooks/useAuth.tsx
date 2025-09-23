@@ -1,6 +1,7 @@
 import { getUserLogged } from "@/lib/apis/User";
+import { removeToken } from "@/lib/secureStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-
+import { router } from "expo-router";
 
 
 export const useAuth = ()=>{
@@ -24,6 +25,17 @@ export const useAuth = ()=>{
     const clearQuery = ()=>{
         queryClient.clear();
     }
-    console.log("usuario",data)
-    return {data,isError,isLoading, invalidateUser, clearQuery};
+    
+     const signOut = async () => {
+        try {
+          await removeToken();
+          invalidateUser();
+          router.replace("/auth/login");
+        } catch (error) {
+          console.error("Error al cerrar sesión:", error);
+        }
+      };
+
+
+    return {data,isError,isLoading, invalidateUser, clearQuery, signOut};
 }

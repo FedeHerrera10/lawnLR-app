@@ -54,6 +54,7 @@ export default function ResendCodeChangePassword() {
   };
 
   return (
+    
     <SendCodeValidation
     control={control}
     handleSubmit={handleSubmit}
@@ -61,5 +62,6 @@ export default function ResendCodeChangePassword() {
     onSubmit={onSubmit}
     mutation={mutation}
   />
+  
   );
 }

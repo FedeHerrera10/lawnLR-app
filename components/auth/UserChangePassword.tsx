@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 export default function OlvidePassword() {
@@ -58,16 +59,17 @@ export default function OlvidePassword() {
   };
 
   return (
+    <SafeAreaProvider>
     <SafeAreaView className="flex-1 bg-green-50">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1 justify-center p-6"
       >
         <View className="bg-white/95 rounded-3xl shadow-xl p-6">
-          <Text className="text-3xl font-extrabold text-center text-green-800 mb-6">
+          <Text className="text-3xl font-SoraExtraBold text-center text-green-800 mb-6">
             Recuperar contraseña
           </Text>
-          <Text className="text-gray-600 text-center mb-6">
+          <Text className="text-gray-600 text-center mb-6 font-Sora">
             Ingresa tu usuario y te enviaremos un enlace para restablecer tu contraseña.
           </Text>
 
@@ -81,6 +83,7 @@ export default function OlvidePassword() {
               >
                 <User size={20} color="#065f46" />
                 <TextInput
+                  editable={!mutation.isPending}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -88,13 +91,13 @@ export default function OlvidePassword() {
                   keyboardType="default"
                   autoCapitalize="none"
                   autoCorrect={false}
-                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900"
+                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
                   placeholderTextColor="#6b7280"
                 />
               </View>
             )}
           />
-          {errors.email && <Text className="text-red-500 mb-2">{errors.email.message as string}</Text>}
+          {errors.email && <Text className="text-red-500 mb-2 font-Sora">{errors.email.message as string}</Text>}
 
           <Text className="text-lg text-gray-900 font-semibold mb-2">Nueva contraseña</Text>
           <Controller
@@ -106,13 +109,14 @@ export default function OlvidePassword() {
               >
                 <Lock size={20} color="#065f46" />
                 <TextInput
+                  editable={!mutation.isPending}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
                   placeholder="Mínimo 6 caracteres"
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
-                  className="flex-1 px-2 py-2.5 text-xl tracking-tight text-gray-900"
+                  className="flex-1 px-2 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
                   placeholderTextColor="#6b7280"
                 />
                 <TouchableOpacity onPress={() => setShowPassword((s) => !s)} activeOpacity={0.8} className="px-2 py-2">
@@ -125,9 +129,9 @@ export default function OlvidePassword() {
               </View>
             )}
           />
-          {errors.password && <Text className="text-red-500 mb-2">{errors.password.message as string}</Text>}
+          {errors.password && <Text className="text-red-500 mb-2 font-Sora">{errors.password.message as string}</Text>}
 
-          <Text className="text-lg text-gray-900 font-semibold mb-2">Repetir contraseña</Text>
+          <Text className="text-lg text-gray-900 font-SoraExtraBold mb-2 ">Repetir contraseña</Text>
           <Controller
             control={control}
             name="confirmPassword"
@@ -137,6 +141,7 @@ export default function OlvidePassword() {
               >
                 <Lock size={20} color="#065f46" />
                 <TextInput
+                  editable={!mutation.isPending}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
@@ -156,7 +161,7 @@ export default function OlvidePassword() {
               </View>
             )}
           />
-          {errors.confirmPassword && <Text className="text-red-500 mb-2">{errors.confirmPassword.message as string}</Text>}
+          {errors.confirmPassword && <Text className="text-red-500 mb-2 font-Sora">{errors.confirmPassword.message as string}</Text>}
 
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
@@ -176,5 +181,6 @@ export default function OlvidePassword() {
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

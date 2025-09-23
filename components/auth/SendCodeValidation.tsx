@@ -13,7 +13,7 @@ import {
 
 import { ResendCodeProps } from '@/constants/types';
 import { UseMutationResult } from '@tanstack/react-query';
-import { Mail } from 'lucide-react-native';
+import { ArrowLeft, Copyright, Mail, Send } from 'lucide-react-native';
 type SendCodeValidationProps = {
     control: Control<ResendCodeProps>;
     handleSubmit: UseFormHandleSubmit<ResendCodeProps>;
@@ -26,20 +26,20 @@ type SendCodeValidationProps = {
 export default function ResendCodeScreen({ control, handleSubmit, errors, onSubmit, mutation }: SendCodeValidationProps) {
 
     return (
-    <SafeAreaView className="flex-1 bg-green-50">
+    <SafeAreaView className="h-[95%] bg-green-50">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1 justify-center p-6"
       >
         <View className="bg-white/95 rounded-3xl shadow-xl p-8">
-          <Text className="text-2xl font-bold text-center text-green-800 mb-2">
+          <Text className="text-2xl font-SoraExtraBold text-center text-green-800 mb-2">
             Reenviar código
           </Text>
-          <Text className="text-base text-center text-gray-600 mb-6">
+          <Text className="text-base font-Sora text-center text-gray-600 mb-6">
             Ingresa tu correo para enviarte un nuevo código de validación.
           </Text>
 
-          <Text className="text-lg text-gray-900 font-semibold mb-2">Correo electrónico</Text>
+          <Text className="text-lg font-SoraExtraBold text-gray-900 mb-2">Correo electrónico</Text>
           <Controller
         control={control}
         name="email"
@@ -52,11 +52,13 @@ export default function ResendCodeScreen({ control, handleSubmit, errors, onSubm
           >
             <Mail size={20} color="#065f46" />
             <TextInput
+              
               value={value}
+              editable={!mutation.isPending}
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="Tu correo electrónico"
-              className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900"
+              className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora "
               placeholderTextColor="#6b7280"
               autoCapitalize="none"
               autoCorrect={false}
@@ -69,22 +71,33 @@ export default function ResendCodeScreen({ control, handleSubmit, errors, onSubm
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
             disabled={mutation.isPending}
-            className="mt-2 bg-green-700 rounded-xl py-4 items-center justify-center shadow-md"
+            className="mt-2 bg-green-700 rounded-xl py-4 items-center justify-center shadow-md flex-row gap-2"
             activeOpacity={0.85}
           >
-            <Text className="text-white font-bold text-lg">
+            <Text className="text-white font-SoraExtraBold text-lg">
               {mutation.isPending ? 'Enviando...' : 'Enviar código'}
             </Text>
+            <Send size={20} color="white" strokeWidth={2}/>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.replace('/')}
-            className="mt-3 bg-white rounded-2xl py-4 items-center justify-center border border-gray-300 shadow-sm"
-            activeOpacity={0.85}
-          >
-            <Text className="text-gray-800 font-semibold text-lg">Cancelar / Volver</Text>
-          </TouchableOpacity>
+              onPress={() => router.replace('/')}
+              className="mt-3 bg-white rounded-2xl py-4 items-center justify-center border border-gray-300 shadow-sm flex-row gap-2"
+              activeOpacity={0.85}
+            >
+              <Text className="text-gray-800 font-SoraExtraBold text-lg  ">Regresar</Text>
+              <ArrowLeft size={22} color="#065f46" strokeWidth={2}/>
+            </TouchableOpacity>
+
+
+
         </View>
+        <View className="items-center mt-10 flex-row justify-center gap-2">
+        <Copyright size={20} color="green" />
+                      <Text className="text-lg text-green-800 font-Sora">
+                       Lawn Tennis LR 2025{" "}
+                      </Text>
+        </View> 
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

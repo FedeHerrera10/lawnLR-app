@@ -1,5 +1,8 @@
+import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { router } from "expo-router";
+import { LogOut, Settings2 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
   Platform,
@@ -35,6 +38,7 @@ const canchas = Array.from({ length: 8 }, (_, i) => ({
 export default function Administracion() {
   const [fecha, setFecha] = useState(new Date());
   const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
+  const { signOut } = useAuth();
 
   // horarios bloqueados por fecha
   const [bloqueados, setBloqueados] = useState<
@@ -51,7 +55,9 @@ export default function Administracion() {
       // 🔓 desbloquear
       setBloqueados({
         ...bloqueados,
-        [fechaKey]: actuales.filter((s) => !(s.cancha === cancha && s.hora === hora)),
+        [fechaKey]: actuales.filter(
+          (s) => !(s.cancha === cancha && s.hora === hora)
+        ),
       });
     } else {
       // 🔒 bloquear
@@ -63,13 +69,29 @@ export default function Administracion() {
   };
 
   const isBloqueado = (cancha: string, hora: string) =>
-    (bloqueados[fechaKey] || []).some((b) => b.cancha === cancha && b.hora === hora);
+    (bloqueados[fechaKey] || []).some(
+      (b) => b.cancha === cancha && b.hora === hora
+    );
+
+ 
 
   return (
     <SafeAreaView className="flex-1">
       {/* Header */}
-      <View className="bg-red-700 px-6 py-8 rounded-b-3xl shadow-md">
-        <Text className="text-white mt-10 text-2xl font-bold">Administración de Canchas</Text>
+      <View className="bg-red-700 px-6 py-8 rounded-b-3xl shadow-md flex-row items-center justify-between">
+        <TouchableOpacity activeOpacity={0.85} className=" " onPress={() => router.push("/(tabs)/canchas/admin-canchas")}>
+          <Settings2 size={22} color="white" style={{ marginTop: 32 }} />
+        </TouchableOpacity>
+        <Text className="text-white mt-10 text-2xl font-bold">
+          Administración de Canchas
+        </Text>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          className=" "
+          onPress={() => signOut()}
+        >
+          <LogOut size={22} color="white" style={{ marginTop: 32 }} />
+        </TouchableOpacity>
       </View>
 
       {/* Selector de fecha estilo card */}
@@ -111,29 +133,46 @@ export default function Administracion() {
       {/* Body */}
       <ScrollView className="p-4">
         {canchas.map((cancha) => (
-          <View key={cancha.id} className="bg-white rounded-2xl shadow-md p-4 mb-6">
-            <Text className="text-lg font-bold text-gray-800 mb-2">{cancha.nombre}</Text>
+          <View
+            key={cancha.id}
+            className="bg-white rounded-2xl shadow-md p-4 mb-6"
+          >
+            <Text className="text-lg font-bold text-gray-800 mb-2">
+              {cancha.nombre}
+            </Text>
             <Text className="text-gray-500 mb-3">{cancha.superficie}</Text>
 
             <View className="flex-row flex-wrap gap-2">
-               {cancha.horarios.map((h, index) => {
+              {cancha.horarios.map((h, index) => {
                 const bloqueado = isBloqueado(cancha.nombre, h.hora);
                 return (
                   <TouchableOpacity
                     key={index}
                     className={`px-3 py-2 rounded-full border w-[28%] items-center
-                      ${bloqueado ? "bg-red-600 border-red-600" : "bg-green-100 border-green-500"}`}
+                      ${
+                        bloqueado
+                          ? "bg-red-600 border-red-600"
+                          : "bg-green-100 border-green-500"
+                      }`}
                     onPress={() => toggleBloqueo(cancha.nombre, h.hora)}
                   >
-                    <Text className={`font-semibold ${bloqueado ? "text-white" : "text-green-700"}`}>
+                    <Text
+                      className={`font-semibold ${
+                        bloqueado ? "text-white" : "text-green-700"
+                      }`}
+                    >
                       {h.hora}
                     </Text>
-                    <Text className={`text-xs ${bloqueado ? "text-white" : "text-gray-700"}`}>
+                    <Text
+                      className={`text-xs ${
+                        bloqueado ? "text-white" : "text-gray-700"
+                      }`}
+                    >
                       ${h.precio}
                     </Text>
                   </TouchableOpacity>
                 );
-              })} 
+              })}
             </View>
           </View>
         ))}
@@ -141,4 +180,3 @@ export default function Administracion() {
     </SafeAreaView>
   );
 }
-

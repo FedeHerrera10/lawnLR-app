@@ -18,7 +18,7 @@ export default function TabLayout() {
 
   if (!data) {
     router.replace("/");
-    return null; // ✅ evita que siga al Tabs
+    return null; // evita que siga al Tabs
   }
 
   const isAdmin = data.roles?.some((r: any) => r.name === "ROLE_ADMIN");
@@ -27,13 +27,13 @@ export default function TabLayout() {
   return (
     <SafeAreaView className="h-[95%]">
     <Tabs 
-      tabBar={(props) => <CustomTabBar {...props} isUser={isUser} />} // ← usamos nuestro tab
+      tabBar={(props) => <CustomTabBar {...props} isUser={isUser} />} 
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="user-home" />
       <Tabs.Screen name="administracion" />
-    </Tabs>
+         </Tabs>
     </SafeAreaView>
   );
 }

@@ -4,7 +4,7 @@ import { getToken } from "../secureStore";
 
 export const getUserLogged = async () => {
     const token = await getToken(); // ✅ Agregar await
-    
+    console.log("token", token)
     if (!token) throw new Error("Usuario no autenticado");
     
     try {

@@ -16,7 +16,7 @@ export default function LoginScreen() {
     handleSubmit,
     formState: { errors },
   } = useForm<LoginProps>({
-    defaultValues: { username: "", password: "" },
+    defaultValues: { username: "fherrera10", password: "12345678" },
     resolver: zodResolver(loginSchema),
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -72,6 +72,7 @@ export default function LoginScreen() {
             <User size={20} color="#065f46" />
             <TextInput
               value={value}
+              editable={!mutation.isPending}
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="Tu usuario"
@@ -99,6 +100,7 @@ export default function LoginScreen() {
             <Lock size={20} color="#065f46" />
             <TextInput
               value={value}
+              editable={!mutation.isPending}
               onChangeText={onChange}
               onBlur={onBlur}
               placeholder="Tu contraseña"

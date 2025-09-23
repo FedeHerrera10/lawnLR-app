@@ -5,6 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 
 export default function Index() {
   const { data, isLoading } = useAuth();
+  
 
   if (isLoading)
     return (

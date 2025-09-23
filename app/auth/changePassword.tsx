@@ -3,7 +3,7 @@ import { passwordResetRequest } from '@/lib/apis/Auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { Eye, EyeOff, Lock, User } from 'lucide-react-native';
+import { ArrowLeft, Copyright, Eye, EyeOff, Key, Lock, User } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -55,20 +55,20 @@ export default function OlvidePassword() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-green-50">
+    <SafeAreaView className="h-[95%] bg-green-50">
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1 justify-center p-6"
       >
         <View className="bg-white/95 rounded-3xl shadow-xl p-6">
-          <Text className="text-3xl font-extrabold text-center text-green-800 mb-6">
+          <Text className="text-3xl  text-center text-green-800 mb-6 font-SoraExtraBold">
             Recuperar contraseña
           </Text>
-          <Text className="text-gray-600 text-center mb-6">
+          <Text className="text-gray-600 text-center mb-6 font-Sora">
             Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
           </Text>
 
-          <Text className="text-lg text-gray-900 font-semibold mb-2">Usuario (correo)</Text>
+          <Text className="text-lg text-gray-900 font-semibold mb-2 font-SoraExtraBold">Usuario (correo)</Text>
           <Controller
             control={control}
             name="email"
@@ -78,13 +78,14 @@ export default function OlvidePassword() {
               >
                 <User size={20} color="#065f46" />
                 <TextInput
+                  editable={!mutation.isPending}
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
                   placeholder="tuemail@correo.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900"
+                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
                   placeholderTextColor="#6b7280"
                   autoCorrect={false}
                 />
@@ -92,10 +93,10 @@ export default function OlvidePassword() {
             )}
           />
           {errors.email && (
-            <Text className="text-red-500 text-base mb-2">{errors.email.message as string}</Text>
+            <Text className="text-red-500 text-base mb-2 font-Sora">{errors.email.message as string}</Text>
           )}
 
-          <Text className="text-lg text-gray-900 font-semibold mb-2">Nueva contraseña</Text>
+          <Text className="text-lg text-gray-900 font-semibold mb-2 font-SoraExtraBold">Nueva contraseña</Text>
           <Controller
             control={control}
             name="password"
@@ -110,7 +111,7 @@ export default function OlvidePassword() {
                   onBlur={onBlur}
                   placeholder="Mínimo 6 caracteres"
                   placeholderTextColor="#6b7280"
-                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900"
+                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
                   secureTextEntry={!showPassword}
                   autoCapitalize="none"
                 />
@@ -125,10 +126,10 @@ export default function OlvidePassword() {
             )}
           />
           {errors.password && (
-            <Text className="text-red-500 text-base mb-2">{errors.password.message as string}</Text>
+            <Text className="text-red-500 text-base mb-2 font-Sora">{errors.password.message as string}</Text>
           )}
 
-          <Text className="text-lg text-gray-900 font-semibold mb-2">Repetir contraseña</Text>
+          <Text className="text-lg text-gray-900 font-semibold mb-2 font-SoraExtraBold">Repetir contraseña</Text>
           <Controller
             control={control}
             name="confirmPassword"
@@ -141,9 +142,9 @@ export default function OlvidePassword() {
                   value={value}
                   onChangeText={onChange}
                   onBlur={onBlur}
-                  placeholder="Vuelve a escribir tu contraseña"
+                  placeholder="Repetir Contraseña"
                   placeholderTextColor="#6b7280"
-                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900"
+                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
                   secureTextEntry={!showConfirm}
                   autoCapitalize="none"
                 />
@@ -158,25 +159,35 @@ export default function OlvidePassword() {
             )}
           />
           {errors.confirmPassword && (
-            <Text className="text-red-500 text-base mb-2">{errors.confirmPassword.message as string}</Text>
+            <Text className="text-red-500 text-base mb-2 font-Sora">{errors.confirmPassword.message as string}</Text>
           )}
 
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
             disabled={mutation.isPending}
-            className="mt-4 bg-green-700 rounded-xl py-4 items-center justify-center shadow-md"
+            className="mt-4 bg-green-700 rounded-xl py-4 items-center justify-center shadow-md flex-row gap-2"
             activeOpacity={0.85}
           >
-            <Text className="text-white font-bold text-lg">{mutation.isPending ? 'Guardando...' : 'Cambiar contraseña'}</Text>
+            <Text className="text-white font-SoraExtraBold text-lg">{mutation.isPending ? 'Guardando...' : 'Cambiar contraseña'}</Text>
+            <Key size={18} color="#fff" strokeWidth={3} />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => router.back()}
-            className="mt-3 bg-white rounded-2xl py-4 items-center justify-center border border-gray-300 shadow-sm"
-            activeOpacity={0.85}
-          >
-            <Text className="text-gray-800 font-semibold text-lg">Cancelar / Volver</Text>
-          </TouchableOpacity>
+                onPress={() => router.back()}
+                className="mt-3 bg-white rounded-2xl py-4 items-center justify-center border border-gray-300 shadow-sm flex-row gap-2"
+                activeOpacity={0.85}
+              >
+                <Text className="text-gray-800 font-SoraExtraBold text-lg  ">
+                  Regresar
+                </Text>
+                <ArrowLeft size={22} color="#065f46" strokeWidth={2} />
+              </TouchableOpacity>
         </View>
+        <View className="items-center mt-10 flex-row justify-center gap-2">
+              <Copyright size={20} color="green" /> 
+              <Text className="text-lg text-green-800 font-Sora">
+                Lawn Tennis LR 2025{" "}
+              </Text>
+            </View>   
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

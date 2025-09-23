@@ -3,25 +3,26 @@ import { Href, useRouter } from "expo-router";
 import { Calendar, User } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const TABSUSER = [
   { name: "user-home", label: "Reserva", icon: Calendar },
   { name: "mis-reservas", label: "Mis Reservas", icon: Calendar },
   { name: "perfil", label: "Perfil", icon: User },
+  { name: "admincanchas", label: "Canchas", icon: Calendar },
   
 ];
 
 const TABSADMIN = [ 
   { name: "administracion", label: "Administracion", icon: Calendar },
   { name: "admin-reservas", label: "Reserva", icon: Calendar },
+  { name: "perfil", label: "Perfil", icon: User },
+  { name: "admincanchas", label: "Canchas", icon: Calendar },
 ];
 
 export default function CustomTabBar({ state , isUser}: {state: any, isUser: boolean}) {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const TABS = isUser ? TABSUSER : TABSADMIN;
-
+  console.log(state.routes)
   return (
     <View
       className="flex-row items-center justify-around bg-white border-t border-gray-200 "
@@ -34,6 +35,7 @@ export default function CustomTabBar({ state , isUser}: {state: any, isUser: boo
 
         const Icon = tab.icon;
         const routeName = `${route.name}`;
+        
         return (
           <TouchableOpacity
             key={route.key}

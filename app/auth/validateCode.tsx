@@ -2,6 +2,7 @@ import { confirmAccountRequest } from "@/lib/apis/Auth";
 import { useRoute } from "@react-navigation/native";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
+import { Check } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -112,23 +113,23 @@ export default function ValidarCodigo() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-green-50">
+    <SafeAreaView className="h-[95%] bg-green-50">
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1 justify-center p-6"
       >
         <View className="bg-white/95 rounded-3xl shadow-xl p-6">
-          <Text className="text-3xl font-extrabold text-center text-green-800 mb-6">
+          <Text className="text-3xl font-SoraExtraBold text-center text-green-800 mb-6">
             Validar código
           </Text>
-          <Text className="text-md text-gray-600 text-center mb-6">
+          <Text className="text-md font-Sora text-center text-gray-600  mb-6 tracking-tight">
             Ingresa el código de 6 dígitos que te enviamos a tu correo
             electrónico.
           </Text>
 
-          <Text className="text-center text-md text-gray-500 mb-4">
+          <Text className="text-center text-md font-Sora text-gray-500 mb-4">
             Tiempo restante para validar:{" "}
-            <Text className="font-semibold text-green-700">
+            <Text className="font-SoraExtraBold text-green-700">
               {formatTime(remaining)}
             </Text>
           </Text>
@@ -141,6 +142,7 @@ export default function ValidarCodigo() {
                   inputs.current[index] = el;
                 }}
                 value={digit}
+                editable={!mutation.isPending}
                 onChangeText={(text) => handleChange(text, index)}
                 keyboardType="number-pad"
                 maxLength={1}
@@ -151,10 +153,11 @@ export default function ValidarCodigo() {
 
           <TouchableOpacity
             onPress={handleSubmit}
-            className="mt-4 bg-green-700 rounded-xl py-4 items-center justify-center shadow-md"
+            className="mt-4 bg-green-700 rounded-xl py-4 items-center justify-center shadow-md font-SoraExtraBold flex-row gap-2"
             activeOpacity={0.85}
           >
-            <Text className="text-white font-bold text-lg">Validar código</Text>
+            <Text className="text-white text-lg tracking-tight font-SoraExtraBold">Validar código</Text>
+            <Check size={20} color="white" strokeWidth={3}/>
           </TouchableOpacity>
           {!email && (
           <TouchableOpacity
@@ -162,7 +165,7 @@ export default function ValidarCodigo() {
             activeOpacity={0.8}
             className="mt-8"
           >
-            <Text className={`text-sm text-center underline`}>
+            <Text className={`text-sm font-Sora text-center underline`}>
               ¿No recibiste el código? Solicita uno nuevo
             </Text>
           </TouchableOpacity>

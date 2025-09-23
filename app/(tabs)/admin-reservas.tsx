@@ -1,6 +1,7 @@
 // app/(tabs)/admin-reservas.tsx
+import { LogOut } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import { SafeAreaView, ScrollView, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 // 🔹 Ejemplo de reservas de todos los usuarios
 const mockReservas = [
@@ -41,10 +42,22 @@ export default function AdminReservas() {
   return (
     <SafeAreaView className="flex-1 bg-gray-100 ">
       {/* Header */}
-      <View className="bg-green-700 px-6 py-8 rounded-b-3xl shadow-md ">
-        <Text className="text-white text-2xl  mt-10 font-bold">Todas las Reservas</Text>
+      <View className="bg-red-700 px-6 py-8 rounded-b-3xl shadow-md flex-row items-center justify-between" >
+      <TouchableOpacity
+          activeOpacity={0.85}
+          className=" "
+        >
+        
+        
+        </TouchableOpacity>
+        <Text className="text-white mt-10 text-2xl font-SoraExtraBold">Reservas</Text>
+        
+        <LogOut size={22} color="white" strokeWidth={3} style={{ marginTop: 32 }}/>
       </View>
-
+    
+      <View>
+          <Text className="text-2xl font-SoraExtraBold">Agregar los fitros  - activas canceladas y luego por fecha</Text>
+      </View>
       <ScrollView className="p-4">
         {reservas.map((r) => (
           <View
