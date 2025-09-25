@@ -1,3 +1,4 @@
+import { UserProvider } from '@/hooks/UseContext';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Slot } from 'expo-router';
@@ -18,13 +19,16 @@ const RootLayout = () => {
       });
     
       if (!loaded) return null;
+      
 
     return (
         <QueryClientProvider client={queryClient}>
+            <UserProvider>
             <SafeAreaProvider className="mb-2  flex-1" style={{backgroundColor: 'black'}}>
                 <Slot/>
             </SafeAreaProvider>
             <Toast />
+            </UserProvider>
         </QueryClientProvider>
     );
 }

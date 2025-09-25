@@ -29,7 +29,7 @@ export const useAuth = ()=>{
      const signOut = async () => {
         try {
           await removeToken();
-          invalidateUser();
+          clearQuery();
           router.replace("/auth/login");
         } catch (error) {
           console.error("Error al cerrar sesión:", error);

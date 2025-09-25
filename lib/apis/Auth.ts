@@ -5,11 +5,9 @@ import api from "../apiaxios";
 export const loginRequest = async (data: LoginProps) => {
   try {
     const response = await api.post("/login", data);
-    console.log("response", response.data);
     return response.data;
   } catch (error) {
     if (isAxiosError(error) && error.response) {
-      console.log("error", error.response.data);
       throw error.response.data;
     }
   }
@@ -21,7 +19,6 @@ export const createUserRequest = async (data: User) => {
     return response.data;
   } catch (error) {
     if (isAxiosError(error) && error.response) {
-      console.log(error.response.data);
       throw error.response.data;
     }
   }
@@ -61,7 +58,6 @@ export const resendCodeChangePassword = async (data: ResendCodeProps) => {
     const response = await api.post("/api/auth/new-code-for-change-password", data);
     return response.data;
   } catch (error) {
-    console.log(error);
     if (isAxiosError(error) && error.response) {
       throw error.response.data;
     }

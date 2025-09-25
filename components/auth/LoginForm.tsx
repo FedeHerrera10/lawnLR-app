@@ -1,14 +1,16 @@
+import { FormInput } from "@/components/ui/inputs/FormInput";
 import { loginRequest } from "@/lib/apis/Auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { Eye, EyeOff, Lock, LogIn, User } from "lucide-react-native";
-import React, { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { LogIn, User } from "lucide-react-native";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { Text, TouchableOpacity } from "react-native";
 import Toast from "react-native-toast-message";
 import { LoginProps, loginSchema } from "../../constants/types";
 import { saveToken } from "../../lib/secureStore";
+import { PasswordInput } from "../ui/inputs/PasswordInput";
 
 export default function LoginScreen() {
   const {
@@ -18,8 +20,10 @@ export default function LoginScreen() {
   } = useForm<LoginProps>({
     defaultValues: { username: "fherrera10", password: "12345678" },
     resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
-  const [showPassword, setShowPassword] = useState(false);
+  
 
   const mutation = useMutation({
     mutationFn: loginRequest,
@@ -50,79 +54,15 @@ export default function LoginScreen() {
     },
   });
   const onSubmit = (formData: LoginProps) => {
-    console.log(formData);
     mutation.mutate(formData);
   };
 
   return (
     <>
-    
 
-      <Text className="text-lg text-gray-900 font-SoraExtraBold mb-2">Usuario</Text>
-      <Controller
-        control={control}
-        name="username"
-        rules={{ required: "Usuario requerido" }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <View
-            className={`border ${
-              errors.username ? "border-red-500" : "border-gray-300"
-            } rounded-2xl px-5 py-3 mb-3 bg-white flex-row items-center`}
-          >
-            <User size={20} color="#065f46" />
-            <TextInput
-              value={value}
-              editable={!mutation.isPending}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="Tu usuario"
-              className="flex-1 px-2 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
-              placeholderTextColor="#6b7280"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-        )}
-      />
-    {errors.username && <Text className="text-red-500 text-base mb-2 font-Sora">{errors.username.message as string}</Text>}
-
-      <Text className="text-lg text-gray-900 font-SoraExtraBold mb-2">Contraseña</Text>
-      <Controller
-        control={control}
-        name="password"
-        rules={{ required: "Contraseña requerida" }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <View
-            className={`border ${
-              errors.password ? "border-red-500" : "border-gray-300"
-            } rounded-2xl px-5 py-3 mb-3 bg-white flex-row items-center`}
-          >
-            <Lock size={20} color="#065f46" />
-            <TextInput
-              value={value}
-              editable={!mutation.isPending}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="Tu contraseña"
-              placeholderTextColor="#6b7280"
-              className="flex-1 px-2 py-2.5 text-xl tracking-tight text-gray-900 font-Sora "
-              secureTextEntry={!showPassword}
-              autoCapitalize="none"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword((s) => !s)}
-              activeOpacity={0.8}
-            >
-              {showPassword ? (
-                <EyeOff size={20} color="#065f46" />
-              ) : (
-                <Eye size={20} color="#065f46" />
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-    {errors.password && <Text className="text-red-500 text-base mb-2 font-Sora">{errors.password.message as string}</Text>}
+      <FormInput control={control} name="username" label="Usuario" placeholder="Ingrese su usuario" icon={<User size={20} color="#065f46" />}  editable={!mutation.isPending} error={errors.username?.message} />
+      <PasswordInput  control={control} name="password" label="Contraseña" editable={!mutation.isPending} error={errors.password?.message} />
+      
 
       <TouchableOpacity
         onPress={handleSubmit(onSubmit)}

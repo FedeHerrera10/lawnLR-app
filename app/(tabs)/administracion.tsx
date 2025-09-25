@@ -82,7 +82,7 @@ export default function Administracion() {
         <TouchableOpacity activeOpacity={0.85} className=" " onPress={() => router.push("/(tabs)/canchas/admin-canchas")}>
           <Settings2 size={22} color="white" style={{ marginTop: 32 }} />
         </TouchableOpacity>
-        <Text className="text-white mt-10 text-2xl font-bold">
+        <Text className="text-white mt-10 text-2xl font-SoraBold">
           Administración de Canchas
         </Text>
         <TouchableOpacity
@@ -102,8 +102,8 @@ export default function Administracion() {
           className="w-full bg-white rounded-2xl shadow-md px-6 py-4 flex-row items-center justify-between border border-red-200"
         >
           <View>
-            <Text className="text-gray-500 text-sm">Seleccionar fecha</Text>
-            <Text className="text-lg font-semibold text-red-700 mt-1">
+            <Text className="text-gray-500 text-sm font-SoraMedium">Seleccionar fecha</Text>
+            <Text className="text-lg font-SoraBold text-red-700 mt-1 ">
               {fecha.toLocaleDateString("es-AR", {
                 day: "2-digit",
                 month: "long",
@@ -137,10 +137,10 @@ export default function Administracion() {
             key={cancha.id}
             className="bg-white rounded-2xl shadow-md p-4 mb-6"
           >
-            <Text className="text-lg font-bold text-gray-800 mb-2">
+            <Text className="text-lg font-bold text-gray-800 mb-2 font-SoraBold">
               {cancha.nombre}
             </Text>
-            <Text className="text-gray-500 mb-3">{cancha.superficie}</Text>
+            <Text className="text-gray-500 mb-3 font-SoraMedium">{cancha.superficie}</Text>
 
             <View className="flex-row flex-wrap gap-2">
               {cancha.horarios.map((h, index) => {
@@ -148,7 +148,7 @@ export default function Administracion() {
                 return (
                   <TouchableOpacity
                     key={index}
-                    className={`px-3 py-2 rounded-full border w-[28%] items-center
+                    className={`px-3 py-2 rounded-full border w-[28%] items-center font-SoraMedium
                       ${
                         bloqueado
                           ? "bg-red-600 border-red-600"
@@ -157,14 +157,14 @@ export default function Administracion() {
                     onPress={() => toggleBloqueo(cancha.nombre, h.hora)}
                   >
                     <Text
-                      className={`font-semibold ${
+                      className={`font-SoraBold ${
                         bloqueado ? "text-white" : "text-green-700"
                       }`}
                     >
                       {h.hora}
                     </Text>
                     <Text
-                      className={`text-xs ${
+                      className={`text-xs font-SoraMedium ${
                         bloqueado ? "text-white" : "text-gray-700"
                       }`}
                     >

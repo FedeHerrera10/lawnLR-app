@@ -1,25 +1,24 @@
+import { FormInput } from '@/components/ui/inputs/FormInput';
+import { PasswordInput } from '@/components/ui/inputs/PasswordInput';
+import { CopyrightText } from '@/components/ui/text/CopyrightText';
 import { changePasswordProps, changePasswordRequest, changePasswordSchema } from '@/constants/types';
 import { passwordResetRequest } from '@/lib/apis/Auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { ArrowLeft, Copyright, Eye, EyeOff, Key, Lock, User } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
+import { ArrowLeft, Key, Mail } from 'lucide-react-native';
+import { useForm } from 'react-hook-form';
 import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 export default function OlvidePassword() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
 
   const { control, handleSubmit, formState: { errors } } = useForm<changePasswordProps>({
     defaultValues: { email:  '', password: '', confirmPassword: '' },
@@ -68,99 +67,11 @@ export default function OlvidePassword() {
             Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
           </Text>
 
-          <Text className="text-lg text-gray-900 font-semibold mb-2 font-SoraExtraBold">Usuario (correo)</Text>
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View
-                className={`border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-5 py-3 mb-3 bg-white flex-row items-center`}
-              >
-                <User size={20} color="#065f46" />
-                <TextInput
-                  editable={!mutation.isPending}
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="tuemail@correo.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
-                  placeholderTextColor="#6b7280"
-                  autoCorrect={false}
-                />
-              </View>
-            )}
-          />
-          {errors.email && (
-            <Text className="text-red-500 text-base mb-2 font-Sora">{errors.email.message as string}</Text>
-          )}
+          <FormInput control={control} name="email" label="Correo electrónico" placeholder='tu@correo.com' error={errors.email?.message} editable={!mutation.isPending} icon={<Mail size={20} color="#065f46" strokeWidth={2} />} />
+          <PasswordInput control={control} name="password" label="Nueva contraseña" error={errors.password?.message} editable={!mutation.isPending} />
 
-          <Text className="text-lg text-gray-900 font-semibold mb-2 font-SoraExtraBold">Nueva contraseña</Text>
-          <Controller
-            control={control}
-            name="password"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View
-                className={`border ${errors.password ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-5 py-3 mb-3 bg-white flex-row items-center`}
-              >
-                <Lock size={20} color="#065f46" />
-                <TextInput
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="Mínimo 6 caracteres"
-                  placeholderTextColor="#6b7280"
-                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                />
-                <TouchableOpacity onPress={() => setShowPassword((s) => !s)} activeOpacity={0.8}>
-                  {showPassword ? (
-                    <EyeOff size={20} color="#065f46" />
-                  ) : (
-                    <Eye size={20} color="#065f46" />
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-          {errors.password && (
-            <Text className="text-red-500 text-base mb-2 font-Sora">{errors.password.message as string}</Text>
-          )}
-
-          <Text className="text-lg text-gray-900 font-semibold mb-2 font-SoraExtraBold">Repetir contraseña</Text>
-          <Controller
-            control={control}
-            name="confirmPassword"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <View
-                className={`border ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'} rounded-2xl px-5 py-3 mb-3 bg-white flex-row items-center`}
-              >
-                <Lock size={20} color="#065f46" />
-                <TextInput
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="Repetir Contraseña"
-                  placeholderTextColor="#6b7280"
-                  className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora"
-                  secureTextEntry={!showConfirm}
-                  autoCapitalize="none"
-                />
-                <TouchableOpacity onPress={() => setShowConfirm((s) => !s)} activeOpacity={0.8}>
-                  {showConfirm ? (
-                    <EyeOff size={20} color="#065f46" />
-                  ) : (
-                    <Eye size={20} color="#065f46" />
-                  )}
-                </TouchableOpacity>
-              </View>
-            )}
-          />
-          {errors.confirmPassword && (
-            <Text className="text-red-500 text-base mb-2 font-Sora">{errors.confirmPassword.message as string}</Text>
-          )}
+          <PasswordInput control={control} name="confirmPassword" label="Repetir contraseña"  error={errors.confirmPassword?.message} editable={!mutation.isPending} />
+          
 
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
@@ -182,12 +93,7 @@ export default function OlvidePassword() {
                 <ArrowLeft size={22} color="#065f46" strokeWidth={2} />
               </TouchableOpacity>
         </View>
-        <View className="items-center mt-10 flex-row justify-center gap-2">
-              <Copyright size={20} color="green" /> 
-              <Text className="text-lg text-green-800 font-Sora">
-                Lawn Tennis LR 2025{" "}
-              </Text>
-            </View>   
+        <CopyrightText color="green" size={20} textColor="green-700" />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

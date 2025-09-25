@@ -55,6 +55,15 @@ export const userSchema = z.object({
     .min(7 , "El documento debe tener al menos 7 dígitos")
     .max(8, "El documento no puede exceder 11 dígitos"),
   
+    numberPhone: z.string()
+    .min(1, "El número de teléfono no puede estar vacío") // Si se envía, no puede ser vacío
+    .min(10, "El número de teléfono debe tener al menos 10 dígitos")
+    .max(15, "El número de teléfono no puede exceder 15 dígitos")
+    .regex(/^[0-9+\-\s()]+$/, "Formato de teléfono inválido")
+    .transform((val) => val.replace(/[^0-9+]/g, ''))
+    .optional() // Hace que el campo sea opcional
+    .or(z.literal('')), // Acepta también una cadena vacía
+    
   birthdate: z.string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "La fecha debe tener formato YYYY-MM-DD")
     .refine((date) => {
@@ -71,6 +80,42 @@ export const userSchema = z.object({
 // Tipo TypeScript inferido del esquema
 export type User = z.infer<typeof userSchema>;
 
+
+export const userResponse = z.object({
+  id: z.number(),
+  username: z.string(),
+  firstname: z.string(),
+  lastname: z.string(),
+  email: z.string(),
+  roles: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+  })),
+  document: z.string().optional().nullable(),
+  numberPhone: z.string().optional().nullable(),
+  birthdate: z.string().optional().nullable(),
+  imageProfile: z.string().nullable(),
+  updatedAt: z.string(),
+  createdAt: z.string(),
+})
+
+export const userUpdate = userSchema.pick({
+  username: true,
+  firstname: true,
+  lastname: true,
+  email: true,
+  document: true,
+  birthdate: true,
+  numberPhone: true,
+})
+export type UserResponse = z.infer<typeof userResponse>;
+
+export type UserUpdate = Pick<User, "username" | "firstname" | "lastname" | "email" | "document" | "birthdate" | "numberPhone">;
+
+
+
+
+//#######################################################################
 
 export const resendCodeSchema = z.object({
   email: z.string().email("Debe ser un email válido").max(255, "El email no puede exceder 255 caracteres").toLowerCase(),

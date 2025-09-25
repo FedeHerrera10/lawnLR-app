@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 export const saveToken = async (token: string) => {
   try {
     await SecureStore.setItemAsync('authToken', token);
-    console.log('Token guardado ✅');
+    
   } catch (error) {
     console.error('Error al guardar token', error);
   }
@@ -14,10 +14,8 @@ export const saveToken = async (token: string) => {
 export const getToken = async (): Promise<string | null> => {
   try {
     const token = await SecureStore.getItemAsync('authToken');
-    console.log('Token obtenido:', token);
     return token;
   } catch (error) {
-    console.error('Error al obtener token', error);
     return null;
   }
 };
@@ -26,8 +24,9 @@ export const getToken = async (): Promise<string | null> => {
 export const removeToken = async () => {
   try {
     await SecureStore.deleteItemAsync('authToken');
-    console.log('Token eliminado ✅');
+    console.log('Token eliminado');
   } catch (error) {
     console.error('Error al eliminar token', error);
+    return null;
   }
 };

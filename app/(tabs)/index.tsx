@@ -1,6 +1,6 @@
 // app/(tabs)/index.tsx
 import { Redirect, router } from "expo-router";
-import { ActivityIndicator, Text, View } from "react-native";
+import Loader from "../../components/ui/Loader";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function Index() {
@@ -9,10 +9,7 @@ export default function Index() {
 
   if (isLoading)
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="mt-3 text-base text-gray-600">Cargando...</Text>
-      </View>
+      <Loader />
     );
 
   if (!data) return router.replace("/");

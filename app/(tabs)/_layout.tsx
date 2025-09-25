@@ -1,7 +1,9 @@
 import CustomTabBar from "@/components/ui/CustomTabBar";
 import { router, Tabs } from "expo-router";
+import { Calendar, User } from "lucide-react-native";
 import React from "react";
-import { ActivityIndicator, SafeAreaView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native";
+import TennisBallLoader from "../../components/ui/Loader";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function TabLayout() {
@@ -9,10 +11,7 @@ export default function TabLayout() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="mt-3 text-base text-gray-600">Cargando...</Text>
-      </View>
+      <TennisBallLoader />
     );
   }
 
@@ -24,15 +23,33 @@ export default function TabLayout() {
   const isAdmin = data.roles?.some((r: any) => r.name === "ROLE_ADMIN");
   const isUser  = data.roles?.some((r: any) => r.name === "ROLE_CLIENT");
 
+  const TABSUSER = [
+    { name: "user-home", label: "Reserva", icon: Calendar },
+    { name: "mis-reservas", label: "Mis Reservas", icon: Calendar },
+    { name: "perfil/[id]", label: "Perfil", icon: User, id: data.id },
+    { name: "admincanchas", label: "Canchas", icon: Calendar },
+    
+  ];
+  
+  const TABSADMIN = [ 
+    { name: "administracion", label: "Administracion", icon: Calendar },
+    { name: "admin-reservas", label: "Reserva", icon: Calendar },
+    { name: "perfil/[id]", label: "Perfil", icon: User , id: data.id},
+    { name: "admincanchas", label: "Canchas", icon: Calendar },
+  ];
+
+  const TABS = isAdmin ? TABSADMIN : TABSUSER;
+
   return (
     <SafeAreaView className="h-[95%]">
     <Tabs 
-      tabBar={(props) => <CustomTabBar {...props} isUser={isUser} />} 
+      tabBar={(props) => <CustomTabBar {...props} isUser={isUser} TABS={TABS} />} 
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
       <Tabs.Screen name="user-home" />
-      <Tabs.Screen name="administracion" />
+      <Tabs.Screen name="administracion" /> 
+      <Tabs.Screen name="perfil/[id]" />   {/* 👈 ruta dinámica */}
          </Tabs>
     </SafeAreaView>
   );

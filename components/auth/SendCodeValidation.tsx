@@ -1,19 +1,20 @@
 import { router } from 'expo-router';
 import React from 'react';
-import { Control, Controller, FieldErrors, SubmitHandler, UseFormHandleSubmit } from 'react-hook-form';
+import { Control, FieldErrors, SubmitHandler, UseFormHandleSubmit } from 'react-hook-form';
 import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 import { ResendCodeProps } from '@/constants/types';
 import { UseMutationResult } from '@tanstack/react-query';
-import { ArrowLeft, Copyright, Mail, Send } from 'lucide-react-native';
+import { ArrowLeft, Send } from 'lucide-react-native';
+import { FormInput } from '../ui/inputs/FormInput';
+import CopyrightText from '../ui/text/CopyrightText';
 type SendCodeValidationProps = {
     control: Control<ResendCodeProps>;
     handleSubmit: UseFormHandleSubmit<ResendCodeProps>;
@@ -39,34 +40,7 @@ export default function ResendCodeScreen({ control, handleSubmit, errors, onSubm
             Ingresa tu correo para enviarte un nuevo código de validación.
           </Text>
 
-          <Text className="text-lg font-SoraExtraBold text-gray-900 mb-2">Correo electrónico</Text>
-          <Controller
-        control={control}
-        name="email"
-        rules={{ required: "El correo electronico requerido" }}
-        render={({ field: { onChange, onBlur, value } }) => (
-          <View
-            className={`border ${
-              errors.email ? "border-red-500" : "border-gray-300"
-            } rounded-xl px-4 py-3 mb-2 bg-white flex-row items-center`}
-          >
-            <Mail size={20} color="#065f46" />
-            <TextInput
-              
-              value={value}
-              editable={!mutation.isPending}
-              onChangeText={onChange}
-              onBlur={onBlur}
-              placeholder="Tu correo electrónico"
-              className="flex-1 px-3 py-2.5 text-xl tracking-tight text-gray-900 font-Sora "
-              placeholderTextColor="#6b7280"
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-          </View>
-        )}
-      />
-    {errors.email && <Text className="text-red-500 text-base mb-2">{errors.email.message as string}</Text>}
+          <FormInput control={control} name="email" label="Correo electrónico" placeholder='tu@correo.com'  error={errors.email?.message}  editable={!mutation.isPending}/>  
 
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
@@ -92,12 +66,7 @@ export default function ResendCodeScreen({ control, handleSubmit, errors, onSubm
 
 
         </View>
-        <View className="items-center mt-10 flex-row justify-center gap-2">
-        <Copyright size={20} color="green" />
-                      <Text className="text-lg text-green-800 font-Sora">
-                       Lawn Tennis LR 2025{" "}
-                      </Text>
-        </View> 
+        <CopyrightText color='green' size={20} textColor='green-800'/>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

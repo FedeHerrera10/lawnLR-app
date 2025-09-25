@@ -1,32 +1,23 @@
 // components/CustomTabBar.tsx
 import { Href, useRouter } from "expo-router";
-import { Calendar, User } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-const TABSUSER = [
-  { name: "user-home", label: "Reserva", icon: Calendar },
-  { name: "mis-reservas", label: "Mis Reservas", icon: Calendar },
-  { name: "perfil", label: "Perfil", icon: User },
-  { name: "admincanchas", label: "Canchas", icon: Calendar },
-  
-];
-
-const TABSADMIN = [ 
-  { name: "administracion", label: "Administracion", icon: Calendar },
-  { name: "admin-reservas", label: "Reserva", icon: Calendar },
-  { name: "perfil", label: "Perfil", icon: User },
-  { name: "admincanchas", label: "Canchas", icon: Calendar },
-];
-
-export default function CustomTabBar({ state , isUser}: {state: any, isUser: boolean}) {
+export default function CustomTabBar({
+  state,
+  isUser,
+  TABS,
+}: {
+  state: any;
+  isUser: boolean;
+  TABS: any;
+}) {
   const router = useRouter();
-  const TABS = isUser ? TABSUSER : TABSADMIN;
-  console.log(state.routes)
+
   return (
     <View
       className="flex-row items-center justify-around bg-white border-t border-gray-200 "
-      style={{ height: 70}}
+      style={{ height: 70 }}
     >
       {state.routes.map((route: any, index: any) => {
         const focused = state.index === index;
@@ -34,16 +25,22 @@ export default function CustomTabBar({ state , isUser}: {state: any, isUser: boo
         if (!tab) return null;
 
         const Icon = tab.icon;
-        const routeName = `${route.name}`;
-        
+        const routeName = route.name; // ej. "perfil/[id]"
+        const id = tab.id;
+        const routeDinamic = id
+          ? `/(tabs)/${routeName.replace("[id]", id)}`
+          : `/(tabs)/${routeName}`;
+
         return (
           <TouchableOpacity
             key={route.key}
             className="flex-1 items-center justify-center"
-            onPress={() => !focused && router.push(routeName as Href)}
+            onPress={() => !focused && router.push(routeDinamic as Href)}
           >
             <Icon size={20} color={focused ? "#16a34a" : "#4A4A4A"} />
-            <Text className={focused ? "text-green-600 mt-1" : "text-gray-600 mt-1"}>
+            <Text
+              className={focused ? "text-green-600 mt-1" : "text-gray-600 mt-1"}
+            >
               {tab.label}
             </Text>
           </TouchableOpacity>

@@ -1,12 +1,14 @@
 import { DateInput } from "@/components/ui/inputs/DateInput";
 import { FormInput } from "@/components/ui/inputs/FormInput";
 import { NumericInput } from "@/components/ui/inputs/NumericInput";
-import { PasswordInput } from "@/components/ui/inputs/PasswordInput";
 import { CopyrightText } from "@/components/ui/text/CopyrightText";
+import { userUpdate, UserUpdate } from "@/constants/types";
+import { useUser } from "@/hooks/UseContext";
+import { updateUser } from "@/lib/apis/User";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { ArrowLeft, Mail, User, UserPlus } from "lucide-react-native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { ArrowLeft, Check, IdCard, Mail, Phone, User } from "lucide-react-native";
 import React from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -16,30 +18,35 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-import { userSchema, User as UserType } from "../../constants/types";
-import { createUserRequest } from "../../lib/apis/Auth";
 
-type FormData = UserType;
+
+
+
 
 // Pantalla de Registro para una app de tenis usando NativeWind + React Hook Form + Zod (schema compartido)
 export default function RegistroTenis() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  
   const router = useRouter();
-
+  const { user } = useUser();
+  const queryClient = useQueryClient();
+  
   const mutation = useMutation({
-    mutationFn: createUserRequest,
-    onSuccess: () => {
+    mutationFn: updateUser,
+    onSuccess: async () => {
       Toast.show({
         type: "success",
-        text1: "Registro exitoso",
-        text2: "Debe validar su cuenta",
-        text1Style: { fontSize: 18 },
-        text2Style: { fontSize: 14 },
+        text1: "Perfil actualizado",
+        text1Style: { fontSize: 16 }
       });
-      router.replace("/auth/validateCode");
+      
+      await queryClient.invalidateQueries({ queryKey: ["userprofile", id] });
+      
+      router.replace(`/perfil/${id}`);
     },
     onError: (error) => {
       Toast.show({
@@ -56,34 +63,49 @@ export default function RegistroTenis() {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({
-    resolver: zodResolver(userSchema),
+  } = useForm<UserUpdate>({
+    resolver: zodResolver(userUpdate),
     defaultValues: {
-      username: "fherrera12",
-      firstname: "federico",
-      lastname: "herrera",
-      email: "federico.herrera@outlook.com",
-      roles: {
-        cliente: true,
-        admin: false,
-        veterinario: false,
-      },
-      document: "",
-      birthdate: "",
-      password: "12345678",
+      username: user?.username,
+      firstname: user?.firstname,
+      lastname: user?.lastname,
+      email: user?.email,
+      document: user?.document  || "",
+      birthdate: user?.birthdate || "",
+      numberPhone: user?.numberPhone || "",
     },
+    
     mode: "onBlur",
     reValidateMode: "onChange",
   });
 
-  const onSubmit = (data: FormData) => {
-    mutation.mutate(data);
-   // router.replace("/auth/validateCode");
+  const isAdmin = user?.roles[0].name === "ROLE_ADMIN";
+
+  const onSubmit = async (data: UserUpdate) => {
+    mutation.mutate({id, data});
   };
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView className="h-[95%] bg-green-50 ">
+      <View className={isAdmin ? "bg-red-700 px-6 py-8 rounded-b-3xl shadow-md" : "bg-green-700 px-6 py-8 rounded-b-3xl shadow-md"}>
+          <View className="flex-row mt-8 justify-between items-center">
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.back()}
+              className="p-1 -ml-2"
+            >
+              <ArrowLeft size={24} color="white" />
+            </TouchableOpacity>
+            <Text className="text-white text-2xl font-SoraExtraBold">
+             Editar Perfil
+            </Text>
+            <TouchableOpacity
+              className="p-1 -mr-2"
+            >
+              </TouchableOpacity>
+          </View>
+        </View> 
+      <SafeAreaView className="flex-1 ">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
@@ -96,12 +118,14 @@ export default function RegistroTenis() {
             }}
           >
             <View className="bg-white/95 rounded-3xl shadow-xl p-6 mt-10">
-              <Text className="text-3xl font-SoraExtraBold text-center text-green-800 mb-2 ">
-                Crear cuenta
-              </Text>
-              <Text className="text-center text-gray-600 mb-6 font-Sora">
-                Completa tus datos para comenzar a jugar
-              </Text>
+              {/*Img Profile*/}
+              
+                <View className="flex items-center justify-center">
+                <View className="w-24 h-24 rounded-full border-2 border-green-700 shadow-lg flex justify-center items-center ">
+                  <User size={32} color="black" strokeWidth={2} />
+                </View>
+                </View>
+            
 
               {/* Username */}
               <FormInput
@@ -142,6 +166,7 @@ export default function RegistroTenis() {
                 name="document"
                 label="Número de Documento"
                 placeholder="Tu número de documento"
+                icon={<IdCard size={20} color="#065f46" strokeWidth={2} />}
                 editable={!mutation.isPending}
                 error={errors.document?.message}
               />
@@ -171,12 +196,17 @@ export default function RegistroTenis() {
                 error={errors.email?.message}
               />
 
-              {/* Contraseña */}
-              <PasswordInput
+               {/* Número de Documento */}
+               <NumericInput
                 control={control}
-                name="password"
-                error={errors.password?.message}
+                name="numberPhone"
+                label="Número de Teléfono"
+                placeholder="Tu número de teléfono"
+                icon={<Phone size={20} color="#065f46" strokeWidth={2} />}
+                editable={!mutation.isPending}
+                error={errors.numberPhone?.message}
               />
+              
 
               <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
@@ -184,20 +214,9 @@ export default function RegistroTenis() {
                 className="mt-4 bg-green-700 rounded-xl py-4  shadow-md flex-row gap-2 justify-center items-center"
               >
                 <Text className="text-white font-SoraExtraBold text-lg">
-                  {mutation.isPending ? "Registrando..." : "Registrarme"}
+                  {mutation.isPending ? "Actualizando..." : "Actualizar"}
                 </Text>
-                <UserPlus size={20} color="white" strokeWidth={2} />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => router.back()}
-                className="mt-3 bg-white rounded-2xl py-4 items-center justify-center border border-gray-300 shadow-sm flex-row gap-2"
-                activeOpacity={0.85}
-              >
-                <Text className="text-gray-800 font-SoraExtraBold text-lg  ">
-                  Regresar
-                </Text>
-                <ArrowLeft size={22} color="#065f46" strokeWidth={2} />
+                <Check size={20} color="white" strokeWidth={2} />
               </TouchableOpacity>
             </View>
 

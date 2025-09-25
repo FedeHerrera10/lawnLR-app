@@ -15,9 +15,15 @@ interface HorarioProfesor {
   horaFin: Date;
 }
 
+interface Cancha {
+  label: string;
+  value: string;
+  tipo: string;
+}
+
 export default function AdminCanchas() {
   const { signOut } = useAuth();
-  const [selectedCancha, setSelectedCancha] = useState<{label: string, value: string} | null>(null);
+  const [selectedCancha, setSelectedCancha] = useState<Cancha | null>(null);
   const [showCanchaModal, setShowCanchaModal] = useState(false);
   
   // Estado para el rango de habilitación
@@ -82,9 +88,7 @@ export default function AdminCanchas() {
       excepcionesProfesores: horariosProfesores
     };
     
-    console.log('Configuración de habilitación:', configuracion);
-    
-    // Aquí iría la llamada a la API para guardar la configuración
+    console.log(configuracion);
     alert(`Cancha ${selectedCancha.label} habilitada exitosamente`);
   };
 
@@ -131,12 +135,12 @@ export default function AdminCanchas() {
       <ScrollView className="flex-1 p-4">
         {/* Selector de Cancha */}
         <View className="mb-6">
-          <Text className="text-gray-700 font-medium mb-2 text-base">Seleccionar Cancha</Text>
+          <Text className="text-gray-700 font-medium mb-2 text-base font-SoraBold">Seleccionar Cancha</Text>
           <TouchableOpacity 
-            className="border border-gray-300 bg-white p-4 rounded-xl flex-row justify-between items-center"
+            className="border border-gray-300 bg-white p-4 rounded-xl flex-row justify-between items-center "
             onPress={() => setShowCanchaModal(true)}
           >
-            <Text className={`${selectedCancha ? 'text-gray-900' : 'text-gray-400'}`}>
+            <Text className={`${selectedCancha ? 'text-gray-900 font-SoraMedium' : 'text-gray-400 font-SoraMedium'}`}>
               {selectedCancha ? `${selectedCancha.label} - ${selectedCancha.tipo}` : 'Seleccione una cancha...'}
             </Text>
             <ChevronDown size={20} color="#6B7280" />
@@ -153,10 +157,10 @@ export default function AdminCanchas() {
 
         {/* Rango de Fechas */}
         <View className="mb-6 bg-white p-4 rounded-xl shadow-sm">
-          <Text className="text-gray-700 font-medium mb-3 text-base">Período de Habilitación</Text>
+          <Text className="text-gray-700 font-medium mb-3 text-base font-SoraBold">Período de Habilitación</Text>
           
           <View className="mb-4">
-            <Text className="text-gray-600 mb-1">Fecha de inicio</Text>
+            <Text className="text-gray-600 mb-1 font-SoraMedium">Fecha de inicio</Text>
             <TouchableOpacity 
               className="border border-gray-200 p-3 rounded-lg flex-row justify-between items-center"
               onPress={() => setMostrarFechaInicio(true)}
@@ -180,7 +184,7 @@ export default function AdminCanchas() {
           </View>
 
           <View className="flex-row items-center justify-between mb-4">
-            <Text>Rango de fechas</Text>
+            <Text className="font-SoraMedium">Rango de fechas</Text>
             <Switch
               value={rangoFechas}
               onValueChange={setRangoFechas}
@@ -190,7 +194,7 @@ export default function AdminCanchas() {
 
           {rangoFechas && (
             <View className="mb-4">
-              <Text className="text-gray-600 mb-1">Fecha de fin</Text>
+              <Text className="text-gray-600 mb-1 font-SoraMedium">Fecha de fin</Text>
               <TouchableOpacity 
                 className="border border-gray-200 p-3 rounded-lg flex-row justify-between items-center"
                 onPress={() => setMostrarFechaFin(true)}
@@ -219,9 +223,9 @@ export default function AdminCanchas() {
         {/* Horario de Habilitación */}
         <View className="mb-6 bg-white p-4 rounded-xl shadow-sm">
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-gray-700 font-medium text-base">Horario de Habilitación</Text>
+            <Text className="text-gray-700 font-SoraBold text-base">Horario de Habilitación</Text>
             <View className="flex-row items-center">
-              <Text className="mr-2 text-sm text-gray-600">Todo el día</Text>
+              <Text className="mr-2 text-sm text-gray-600 font-SoraMedium">Todo el día</Text>
               <Switch
                 value={todoElDia}
                 onValueChange={setTodoElDia}
@@ -233,7 +237,7 @@ export default function AdminCanchas() {
           {!todoElDia && (
             <View className="flex-row justify-between">
               <View className="w-[48%]">
-                <Text className="text-gray-600 mb-1">Hora inicio</Text>
+                <Text className="text-gray-600 mb-1 font-SoraMedium">Hora inicio</Text>
                 <TouchableOpacity 
                   className="border border-gray-200 p-3 rounded-lg flex-row justify-between items-center"
                   onPress={() => setMostrarHoraInicio(true)}
@@ -257,7 +261,7 @@ export default function AdminCanchas() {
               </View>
 
               <View className="w-[48%]">
-                <Text className="text-gray-600 mb-1">Hora fin</Text>
+                <Text className="text-gray-600 mb-1 font-SoraMedium">Hora fin</Text>
                 <TouchableOpacity 
                   className="border border-gray-200 p-3 rounded-lg flex-row justify-between items-center"
                   onPress={() => setMostrarHoraFin(true)}
@@ -286,7 +290,7 @@ export default function AdminCanchas() {
         {/* Horarios de Profesores */}
         <View className="mb-6 bg-white p-4 rounded-xl shadow-sm">
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-gray-700 font-medium text-base">Horarios de Profesores</Text>
+            <Text className="text-gray-700 font-SoraBold text-base">Horarios de Profesores</Text>
             <TouchableOpacity 
               className="bg-green-100 p-2 rounded-full"
               onPress={() => setMostrarFormularioHorario(true)}
@@ -300,8 +304,8 @@ export default function AdminCanchas() {
               {horariosProfesores.map((horario) => (
                 <View key={horario.id} className="flex-row justify-between items-center py-2 border-b border-gray-100">
                   <View>
-                    <Text className="font-medium">{horario.dia}</Text>
-                    <Text className="text-sm text-gray-500">
+                    <Text className="font-SoraMedium">{horario.dia}</Text>
+                    <Text className="text-sm text-gray-500 font-SoraMedium">
                       {formatearHora(horario.horaInicio)} - {formatearHora(horario.horaFin)}
                     </Text>
                   </View>
@@ -312,19 +316,20 @@ export default function AdminCanchas() {
               ))}
             </View>
           ) : (
-            <Text className="text-gray-500 text-center py-2">No hay horarios de profesores agregados</Text>
+            <Text className="text-gray-500 text-center py-2 font-SoraMedium">No hay horarios de profesores agregados</Text>
           )}
         </View>
 
         {/* Botón de confirmación */}
         <TouchableOpacity 
-          className="bg-green-600 py-4 rounded-xl items-center mb-8 shadow-md"
+          className="bg-green-600 py-4 rounded-xl items-center mb-8 shadow-md flex-row justify-center gap-2"
           onPress={handleHabilitarCancha}
           disabled={!selectedCancha || horariosProfesores.length === 0}
         >
-          <Text className="text-white font-bold text-lg">
+          <Text className="text-white font-SoraBold text-lg">
             Habilitar Cancha
           </Text>
+          <Plus size={20} color="#fff" />
         </TouchableOpacity>
       </ScrollView>
 
@@ -342,7 +347,7 @@ export default function AdminCanchas() {
           
           <View className="bg-white rounded-t-3xl max-h-[80%] overflow-hidden">
             <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
-              <Text className="text-lg font-bold text-gray-900">Seleccionar Cancha</Text>
+              <Text className="text-lg font-SoraBold text-gray-900">Seleccionar Cancha</Text>
               <TouchableOpacity onPress={() => setShowCanchaModal(false)}>
                 <X size={24} color="#6B7280" />
               </TouchableOpacity>
@@ -391,14 +396,14 @@ export default function AdminCanchas() {
         <View className="flex-1 bg-black/50 justify-center p-4">
           <View className="bg-white rounded-2xl p-6">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-bold text-gray-900">Agregar Horario de Profesor</Text>
+              <Text className="text-lg font-SoraBold text-gray-900">Agregar Horario de Profesor</Text>
               <TouchableOpacity onPress={() => setMostrarFormularioHorario(false)}>
                 <X size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
             
             <View className="mb-4">
-              <Text className="text-gray-600 mb-1">Día de la semana</Text>
+              <Text className="text-gray-600 mb-1 font-SoraMedium">Día de la semana</Text>
               <View className="border border-gray-200 rounded-lg p-2">
                 <RNPickerSelect
                   onValueChange={(value) => setNuevoHorario({...nuevoHorario, dia: value})}
@@ -425,7 +430,7 @@ export default function AdminCanchas() {
 
             <View className="flex-row justify-between mb-4">
               <View className="w-[48%]">
-                <Text className="text-gray-600 mb-1">Hora inicio</Text>
+                <Text className="text-gray-600 mb-1 font-SoraMedium">Hora inicio</Text>
                 <TouchableOpacity 
                   className="border border-gray-200 p-3 rounded-lg flex-row justify-between items-center"
                   onPress={() => setMostrarHoraInicioProf(true)}
@@ -449,7 +454,7 @@ export default function AdminCanchas() {
               </View>
 
               <View className="w-[48%]">
-                <Text className="text-gray-600 mb-1">Hora fin</Text>
+                <Text className="text-gray-600 mb-1 font-SoraMedium">Hora fin</Text>
                 <TouchableOpacity 
                   className="border border-gray-200 p-3 rounded-lg flex-row justify-between items-center"
                   onPress={() => setMostrarHoraFinProf(true)}
@@ -474,10 +479,12 @@ export default function AdminCanchas() {
             </View>
 
             <TouchableOpacity 
-              className="bg-green-600 py-3 rounded-lg items-center mt-2"
+              className="bg-green-600 py-3 rounded-lg items-center mt-2 flex-row justify-center gap-2"
               onPress={agregarHorarioProfesor}
             >
-              <Text className="text-white font-medium">Agregar Horario</Text>
+
+              <Text className="text-white font-SoraBold">Agregar Horario</Text>
+                <Plus size={20} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>

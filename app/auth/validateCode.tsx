@@ -45,7 +45,6 @@ export default function ValidarCodigo() {
       router.replace(routeDestination);
     },
     onError: (error) => {
-      console.log(error);
       Toast.show({
         type: "error",
         text1: "Error",
