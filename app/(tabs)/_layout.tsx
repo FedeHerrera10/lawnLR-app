@@ -21,11 +21,11 @@ export default function TabLayout() {
   }
 
   const isAdmin = data.roles?.some((r: any) => r.name === "ROLE_ADMIN");
-  const isUser  = data.roles?.some((r: any) => r.name === "ROLE_CLIENT");
+  const isUser  = data.roles?.some((r: any) => r.name === "ROLE_USER");
 
   const TABSUSER = [
     { name: "user-home", label: "Reserva", icon: Calendar },
-    { name: "mis-reservas", label: "Mis Reservas", icon: Calendar },
+    { name: "reservas/[id]", label: "Mis Reservas", icon: Calendar , id: data.id },
     { name: "perfil/[id]", label: "Perfil", icon: User, id: data.id },
     { name: "admincanchas", label: "Canchas", icon: Calendar },
     
@@ -40,6 +40,9 @@ export default function TabLayout() {
 
   const TABS = isAdmin ? TABSADMIN : TABSUSER;
 
+  console.log(TABS);
+
+
   return (
     <SafeAreaView className="h-[95%]">
     <Tabs 
@@ -49,7 +52,10 @@ export default function TabLayout() {
       <Tabs.Screen name="index" />
       <Tabs.Screen name="user-home" />
       <Tabs.Screen name="administracion" /> 
-      <Tabs.Screen name="perfil/[id]" />   {/* 👈 ruta dinámica */}
+      <Tabs.Screen name="mis-reservas" />
+      <Tabs.Screen name="reserva" />
+      <Tabs.Screen name="perfil/[id]" />
+      <Tabs.Screen name="reservas/[id]" />   {/* 👈 ruta dinámica */}
          </Tabs>
     </SafeAreaView>
   );

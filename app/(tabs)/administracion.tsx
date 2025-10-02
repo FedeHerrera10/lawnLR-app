@@ -1,10 +1,15 @@
+import TennisBallLoader from "@/components/ui/Loader";
+import { Cancha } from "@/constants/types";
 import { useAuth } from "@/hooks/useAuth";
+import { getCanchasByDate } from "@/lib/apis/Canchas";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { LogOut, Settings2 } from "lucide-react-native";
-import React, { useState } from "react";
+import { LogOut, Settings2, ShieldBan } from "lucide-react-native";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Platform,
   SafeAreaView,
   ScrollView,
@@ -12,38 +17,32 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const horariosBase = [
-  { hora: "08:00", precio: 1750 },
-  { hora: "09:00", precio: 1750 },
-  { hora: "10:00", precio: 1750 },
-  { hora: "11:00", precio: 1960 },
-  { hora: "12:00", precio: 1960 },
-  { hora: "13:00", precio: 1960 },
-  { hora: "14:00", precio: 1960 },
-  { hora: "15:00", precio: 2100 },
-  { hora: "16:00", precio: 2100 },
-  { hora: "17:00", precio: 2100 },
-  { hora: "18:00", precio: 2100 },
-  { hora: "19:00", precio: 2100 },
-];
-
-const canchas = Array.from({ length: 8 }, (_, i) => ({
-  id: i + 1,
-  nombre: `Cancha ${i + 1}`,
-  superficie: "Polvo de Ladrillo",
-  horarios: horariosBase,
-}));
+import Toast from "react-native-toast-message";
 
 export default function Administracion() {
   const [fecha, setFecha] = useState(new Date());
   const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
   const { signOut } = useAuth();
 
-  // horarios bloqueados por fecha
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["canchasxfecha"],
+    queryFn: () => getCanchasByDate(fecha.toISOString().split("T")[0]),
+    enabled: true,
+    staleTime: 0,
+  });
+
   const [bloqueados, setBloqueados] = useState<
     Record<string, { cancha: string; hora: string }[]>
   >({});
+
+  useEffect(() => {
+    if (data && isLoading === false) setBloqueados(data);
+  }, [data, isLoading]);
+
+  if (isLoading) return <TennisBallLoader />;
+  if (error) return <Text>Error: {error.message}</Text>;
+
+  // horarios bloqueados por fecha
 
   const fechaKey = fecha.toISOString().split("T")[0];
 
@@ -73,13 +72,30 @@ export default function Administracion() {
       (b) => b.cancha === cancha && b.hora === hora
     );
 
- 
+  const handleGuardarBloqueos = () => {
+    Alert.alert("Guardar bloqueos", "¿Estás seguro de guardar los bloqueos?", [
+      { text: "Cancelar", onPress: () => console.log("Cancelado") },
+      {
+        text: "Guardar",
+        onPress: () =>
+          Toast.show({
+            type: "success",
+            text1: "Actualizado correctamente",
+            text1Style: { fontSize: 16 },
+          }),
+      },
+    ]);
+  };
 
   return (
     <SafeAreaView className="flex-1">
       {/* Header */}
       <View className="bg-red-700 px-6 py-8 rounded-b-3xl shadow-md flex-row items-center justify-between">
-        <TouchableOpacity activeOpacity={0.85} className=" " onPress={() => router.push("/(tabs)/canchas/admin-canchas")}>
+        <TouchableOpacity
+          activeOpacity={0.85}
+          className=" "
+          onPress={() => router.push("/(tabs)/canchas/admin-canchas")}
+        >
           <Settings2 size={22} color="white" style={{ marginTop: 32 }} />
         </TouchableOpacity>
         <Text className="text-white mt-10 text-2xl font-SoraBold">
@@ -102,7 +118,9 @@ export default function Administracion() {
           className="w-full bg-white rounded-2xl shadow-md px-6 py-4 flex-row items-center justify-between border border-red-200"
         >
           <View>
-            <Text className="text-gray-500 text-sm font-SoraMedium">Seleccionar fecha</Text>
+            <Text className="text-gray-500 text-sm font-SoraMedium">
+              Seleccionar fecha
+            </Text>
             <Text className="text-lg font-SoraBold text-red-700 mt-1 ">
               {fecha.toLocaleDateString("es-AR", {
                 day: "2-digit",
@@ -132,48 +150,59 @@ export default function Administracion() {
 
       {/* Body */}
       <ScrollView className="p-4">
-        {canchas.map((cancha) => (
+        {data?.map((cancha: Cancha) => (
           <View
             key={cancha.id}
             className="bg-white rounded-2xl shadow-md p-4 mb-6"
           >
-            <Text className="text-lg font-bold text-gray-800 mb-2 font-SoraBold">
-              {cancha.nombre}
-            </Text>
-            <Text className="text-gray-500 mb-3 font-SoraMedium">{cancha.superficie}</Text>
-
-            <View className="flex-row flex-wrap gap-2">
-              {cancha.horarios.map((h, index) => {
-                const bloqueado = isBloqueado(cancha.nombre, h.hora);
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    className={`px-3 py-2 rounded-full border w-[28%] items-center font-SoraMedium
-                      ${
-                        bloqueado
-                          ? "bg-red-600 border-red-600"
-                          : "bg-green-100 border-green-500"
-                      }`}
-                    onPress={() => toggleBloqueo(cancha.nombre, h.hora)}
-                  >
-                    <Text
-                      className={`font-SoraBold ${
-                        bloqueado ? "text-white" : "text-green-700"
-                      }`}
-                    >
-                      {h.hora}
-                    </Text>
-                    <Text
-                      className={`text-xs font-SoraMedium ${
-                        bloqueado ? "text-white" : "text-gray-700"
-                      }`}
-                    >
-                      ${h.precio}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
+            <View className="flex-row  justify-between">
+              <View className="flex-col">
+                <Text className="text-lg font-bold text-gray-800 mb-2 font-SoraBold">
+                  {cancha.nombre}
+                </Text>
+                <Text className="text-gray-500 mb-3 font-SoraMedium">
+                  {"Polvo ladrillo"}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={() => handleGuardarBloqueos()}>
+                <ShieldBan size={20} color="#dc2626" />
+              </TouchableOpacity>
             </View>
+            {cancha.disponibilidades?.length > 0 && (
+              <View className="flex-row flex-wrap gap-2 mt-2">
+                {cancha.disponibilidades
+                  .filter((h) => h.horariosDisponibles?.length > 0) // solo con horarios
+                  .map((h, index) => {
+                    const { horariosDisponibles } = h;
+
+                    return horariosDisponibles.map((horario, i) => {
+                      const bloqueado = isBloqueado(cancha.nombre, horario);
+                      return (
+                        <TouchableOpacity
+                          key={`${index}-${i}`}
+                          className={`px-3 py-4 rounded-full border w-[28%] items-center font-SoraMedium
+              ${
+                bloqueado
+                  ? "bg-red-600 border-red-600"
+                  : "bg-green-100 border-green-500"
+              }`}
+                          onPress={() => {
+                            toggleBloqueo(cancha.nombre, horario);
+                          }}
+                        >
+                          <Text
+                            className={`font-SoraBold ${
+                              bloqueado ? "text-white" : "text-green-700"
+                            }`}
+                          >
+                            {horario} hs.
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    });
+                  })}
+              </View>
+            )}
           </View>
         ))}
       </ScrollView>

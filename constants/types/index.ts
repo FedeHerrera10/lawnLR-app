@@ -142,3 +142,66 @@ export const changePasswordSchema = z
   export type changePasswordProps = z.infer<typeof changePasswordSchema>;
   export type changePasswordRequest = Pick<changePasswordProps, "email" | "password">;
 
+//#######################################################################
+
+// Esquema para los horarios de disponibilidad
+const horarioSchema = z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/);
+
+// Esquema para la disponibilidad diaria
+const disponibilidadSchema = z.object({
+  id: z.number().int().positive(),
+  fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  horariosDisponibles: z.array(horarioSchema),
+  horariosBloqueados: z.array(horarioSchema),
+  horariosOcupados: z.array(horarioSchema),
+});
+
+// Esquema para una cancha
+const canchaSchema = z.object({
+  id: z.number().int().positive(),
+  nombre: z.string().min(1, "El nombre es requerido"),
+  disponibilidades: z.array(disponibilidadSchema).optional().nullable(),
+});
+
+// Esquema para el array de canchas
+export const canchasSchema = z.array(canchaSchema);
+
+// Tipo TypeScript inferido del esquema
+export type Cancha = z.infer<typeof canchaSchema>;
+export type Disponibilidad = z.infer<typeof disponibilidadSchema>;
+
+//#######################################################################
+
+const horarioSchemaProfesor = z.object({
+  dia: z.string().min(1, "El día es requerido"),
+  horaInicio: z.string().min(1, "Hora inicio requerida"),
+  horaFin: z.string().min(1, "Hora fin requerida"),
+}).refine((data) => data.horaInicio < data.horaFin, {
+  message: "La hora de inicio debe ser menor que la hora de fin",
+  path: ["horaFin"],
+});
+
+export const habilitarCanchaSchema = z.object({
+  canchaId: z.number().min(1, "Debe seleccionar una cancha"),
+  fechaInicio: z.string().optional(),
+  fechaFin: z.string().optional(),
+  horaInicio: z.string().min(1, "Hora inicio requerida"),
+  horaFin: z.string().min(1, "Hora fin requerida"),
+  horariosProfesores: z.array(horarioSchemaProfesor).default([]),
+})
+  //   
+//   fechaFin: z.string().min(1, "Fecha fin requerida"),
+//   horaInicio: z.string().min(1, "Hora inicio requerida"),
+//   horaFin: z.string().min(1, "Hora fin requerida"),
+//   horariosProfesores: z.array(horarioSchemaProfesor).default([]),
+// }).refine((data) => data.fechaInicio <= data.fechaFin, {
+//   message: "La fecha de inicio debe ser menor o igual a la fecha de fin",
+//   path: ["fechaFin"],
+// }).refine((data) => data.horaInicio < data.horaFin, {
+//   message: "La hora de inicio debe ser menor que la hora de fin",
+//   path: ["horaFin"],
+// });
+
+export type HabilitarCanchaForm = z.infer<typeof habilitarCanchaSchema>;
+export type HorarioProfesor = z.infer<typeof horarioSchemaProfesor>;
+export type DiaSemana = "Lunes" | "Martes" | "Miércoles" | "Jueves" | "Viernes" | "Sábado" | "Domingo";
