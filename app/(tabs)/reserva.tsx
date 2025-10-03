@@ -1,14 +1,14 @@
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { ArrowLeft, ArrowRight, CheckCircle, Plus } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 type Player = {
@@ -19,7 +19,16 @@ type Player = {
 type Step = 'jugadores' | 'pago' | 'confirmacion';
 
 export default function ReservaScreen() {
-    const [currentStep, setCurrentStep] = useState<Step>('jugadores');
+  const { data } = useLocalSearchParams();
+
+  // Parseamos el string de vuelta a objeto
+  //Ejemplo de data que pasa 
+  //Reservas [{"canchaId": 1, "canchaNombre": "Cancha 1", "horarios": ["10:00"]}]
+  const reservas = data ? JSON.parse(data as string) : [];
+
+  console.log("Reservas", reservas);
+  
+  const [currentStep, setCurrentStep] = useState<Step>('jugadores');
   const [players, setPlayers] = useState<Player[]>([{ id: '1', dni: '' }]);
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -332,28 +341,41 @@ export default function ReservaScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView className="flex-1 bg-green-700" edges={["top"]}>
       {/* Header */}
-      <View className="bg-green-700 px-6 pt-16 pb-6  rounded-b-3xl shadow-md">
-        <View className="flex-row justify-between items-center ">
-          <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => currentStep === 'jugadores' ? router.back() : setCurrentStep('jugadores')}
-            className="p-1 -ml-2"
-          >
-            <ArrowLeft size={24} color="white" />
-          </TouchableOpacity>
-          <Text className="text-white text-2xl font-SoraExtraBold">
-            {currentStep === 'jugadores' ? 'Jugadores' : 
-             currentStep === 'pago' ? 'Pago' : 'Confirmación'}
-          </Text>
-          <View className="w-6" />
-        </View>
+      <View className="bg-green-700 px-6 py-4 rounded-b-3xl shadow-md flex-row items-center justify-between">
+      <View className="flex-row items-center justify-between px-2">
+  {/* Flecha izquierda */}
+  <TouchableOpacity
+    activeOpacity={0.85}
+    onPress={() =>
+      currentStep === "jugadores"
+        ? router.back()
+        : setCurrentStep("jugadores")
+    }
+    className="p-1 w-8 items-start" // ancho fijo
+  >
+    <ArrowLeft size={24} color="white" />
+  </TouchableOpacity>
+
+  {/* Texto centrado */}
+  <Text className="text-white text-2xl font-SoraExtraBold text-center flex-1">
+    {currentStep === "jugadores"
+      ? "Jugadores"
+      : currentStep === "pago"
+      ? "Pago"
+      : "Confirmación"}
+  </Text>
+
+  {/* Espaciador derecho para centrar el texto */}
+  <View className="w-8" />
+</View>
+
       </View>
 
       
 
-      <ScrollView className="flex-1 px-4 py-6">
+      <ScrollView className="flex-1 px-4 py-6 bg-gray-100">
         {/* Indicador de pasos */}
         {renderStepIndicator()}
         

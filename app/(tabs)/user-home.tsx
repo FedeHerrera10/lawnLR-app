@@ -91,10 +91,28 @@ export default function UserReservasScreen() {
     });
   };
 
-  const handleReservar = () => {
-    console.log("Reservando:", horariosSeleccionados);
+  const transformar = (data: { canchaId: number; canchaNombre: string; hora: string }[]) => {
+    const agrupado: Record<number, { canchaId: number; canchaNombre: string; horarios: string[] }> = {};
+  
+    data.forEach(({ canchaId, canchaNombre, hora }) => {
+      if (!agrupado[canchaId]) {
+        agrupado[canchaId] = { canchaId, canchaNombre, horarios: [] };
+      }
+      agrupado[canchaId].horarios.push(hora);
+    });
+  
+    return Object.values(agrupado);
+  };
+  
+  
 
-    router.push("/(tabs)/reserva");
+  const handleReservar = () => {
+    const reserva = transformar(horariosSeleccionados);
+
+    router.push({
+      pathname: "/(tabs)/reserva",
+      params: { data: JSON.stringify(reserva) },
+    });
 
     setHorariosSeleccionados([]);
     setModalVisible(false);
