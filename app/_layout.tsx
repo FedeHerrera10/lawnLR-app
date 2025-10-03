@@ -27,7 +27,7 @@ const RootLayout = () => {
             <SafeAreaProvider className="mb-2  flex-1" style={{backgroundColor: 'black'}}>
                 <Slot/>
             </SafeAreaProvider>
-            <Toast />
+            <Toast  position='top'/>
             </UserProvider>
         </QueryClientProvider>
     );

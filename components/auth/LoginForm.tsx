@@ -31,7 +31,7 @@ export default function LoginScreen({
     handleSubmit,
     formState: { errors },
   } = useForm<LoginProps>({
-    defaultValues: { username: "fherrera10", password: "12345678" },
+    defaultValues: { username: "celeste123", password: "12345678" },
     resolver: zodResolver(loginSchema),
     mode: "onBlur",
     reValidateMode: "onChange",

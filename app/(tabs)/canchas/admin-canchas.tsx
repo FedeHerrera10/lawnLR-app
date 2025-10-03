@@ -160,7 +160,6 @@ export default function AdminCanchas() {
       horariosProfesores: [],
     };
 
-    console.log(payload);
 
     mutation.mutate(payload);
   };

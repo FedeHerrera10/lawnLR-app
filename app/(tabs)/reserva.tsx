@@ -1,4 +1,4 @@
-import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { ArrowLeft, ArrowRight, CheckCircle, Plus } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
 import {
@@ -19,16 +19,7 @@ type Player = {
 type Step = 'jugadores' | 'pago' | 'confirmacion';
 
 export default function ReservaScreen() {
-  const { seleccionados: seleccionadosStr } = useLocalSearchParams<{
-    seleccionados: string;
-  }>();
-
-  // Convertir el string JSON de vuelta a objeto
-  const seleccionados = seleccionadosStr ? JSON.parse(seleccionadosStr) : [];
-
-  // Ahora puedes usar seleccionados como un array normal
-  console.log(seleccionados);
-  const [currentStep, setCurrentStep] = useState<Step>('jugadores');
+    const [currentStep, setCurrentStep] = useState<Step>('jugadores');
   const [players, setPlayers] = useState<Player[]>([{ id: '1', dni: '' }]);
   const [cardNumber, setCardNumber] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
@@ -38,7 +29,6 @@ export default function ReservaScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      console.log('✅ Entró a la pestaña Home');
       return () => {
         setIsLoading(false);
         setCurrentStep('jugadores');
@@ -49,7 +39,7 @@ export default function ReservaScreen() {
 
 
   const seleccionadosParsed: { cancha: string; hora: string; precio: number }[] =
-    seleccionados ? JSON.parse(seleccionados) : [];
+    [];
 
   const cancha = seleccionadosParsed[0]?.cancha ?? "N/A";
   const horaInicio = seleccionadosParsed[0]?.hora ?? "-";

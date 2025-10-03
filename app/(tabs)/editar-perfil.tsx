@@ -80,7 +80,6 @@ export default function RegistroTenis() {
 
   const onSubmit = async (data: UserUpdate) => {
     try {
-    console.log(data);
     
     await invalidateQueries({
       queryKey: ["user", id],

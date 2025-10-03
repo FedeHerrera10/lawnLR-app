@@ -1,3 +1,4 @@
+import CanchaCard from "@/components/ui/canchaCard";
 import TennisBallLoader from "@/components/ui/Loader";
 import { Cancha } from "@/constants/types";
 import { useAuth } from "@/hooks/useAuth";
@@ -5,230 +6,324 @@ import { getCanchasByDate } from "@/lib/apis/Canchas";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { ArrowRightIcon, LogOut } from "lucide-react-native";
+import { router } from "expo-router";
+import { LogOut, X } from "lucide-react-native";
 import React, { useState } from "react";
 import {
+  FlatList,
+  Modal,
   Platform,
-  SafeAreaView,
-  ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import Toast from "react-native-toast-message";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+type HorarioSeleccionado = {
+  canchaId: number;
+  canchaNombre: string;
+  hora: string;
+};
 
 export default function UserReservasScreen() {
-  const { signOut } = useAuth();
-  const router = useRouter();
   const [fecha, setFecha] = useState(new Date());
   const [mostrarDatePicker, setMostrarDatePicker] = useState(false);
-  const [seleccionados, setSeleccionados] = useState<
-    {
-      canchaId: number;
-      canchaNombre: string;
-      hora: string;
-    }[]
+  const [modalVisible, setModalVisible] = useState(false);
+  const [canchaSeleccionada, setCanchaSeleccionada] = useState<Cancha | null>(
+    null
+  );
+  const [horariosSeleccionados, setHorariosSeleccionados] = useState<
+    HorarioSeleccionado[]
   >([]);
+  const { signOut } = useAuth();
 
   const {
     data: canchas,
-    error,
     isLoading,
+    error,
   } = useQuery<Cancha[]>({
-    queryKey: ["canchasxfecha", fecha.toISOString().split("T")[0]],
+    queryKey: ["canchasxfecha", fecha],
     queryFn: () => getCanchasByDate(fecha.toISOString().split("T")[0]),
     enabled: true,
     staleTime: 0,
   });
 
-  const toggleSeleccion = (
-    canchaId: number,
-    canchaNombre: string,
-    hora: string
-  ) => {
-    setSeleccionados((prev) => {
-      // Verificar si ya está seleccionada esta hora para esta cancha
-      const existe = prev.some(
-        (s) => s.canchaId === canchaId && s.hora === hora
-      );
+  const toggleSeleccion = (cancha: Cancha, hora: string) => {
+    setHorariosSeleccionados((prev) => {
+      const existentes = prev.filter((s) => s.canchaId === cancha.id);
+      const existe = existentes.some((s) => s.hora === hora);
 
-      // Si ya existe la quitamos, si no existe la agregamos
+      const horaEnMinutos = (h: string) => {
+        const [hh, mm] = h.split(":").map(Number);
+        return hh * 60 + mm;
+      };
+
       if (existe) {
-        return prev.filter((s) => !(s.canchaId === canchaId && s.hora === hora));
+        // Si ya estaba seleccionado, deseleccionamos
+        return prev.filter(
+          (s) => !(s.canchaId === cancha.id && s.hora === hora)
+        );
       }
 
-      // Si es la primera selección o es de la misma cancha, la agregamos
-      if (prev.length === 0 || prev[0].canchaId === canchaId) {
-        return [...prev, { canchaId, canchaNombre, hora }];
+      if (existentes.length === 0) {
+        // Primer horario, siempre permitido
+        return [
+          ...prev,
+          { canchaId: cancha.id, canchaNombre: cancha.nombre, hora },
+        ];
       }
 
-      // Si intenta seleccionar de otra cancha, mostramos error
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Solo puedes seleccionar horarios de una misma cancha",
-        text1Style: { fontSize: 18 },
-        text2Style: { fontSize: 16 },
-      });
+      // Validar consecutividad
+      const minutosExistentes = existentes.map((s) => horaEnMinutos(s.hora));
+      const nuevaHora = horaEnMinutos(hora);
+      const min = Math.min(...minutosExistentes);
+      const max = Math.max(...minutosExistentes);
+
+      // Solo permitir si nuevaHora es justo antes o justo después
+      const paso = 60; // si los turnos son de 1 hora, cambiar si es diferente
+      if (nuevaHora === min - paso || nuevaHora === max + paso) {
+        return [
+          ...prev,
+          { canchaId: cancha.id, canchaNombre: cancha.nombre, hora },
+        ];
+      }
       return prev;
     });
   };
 
-  const isSeleccionado = (canchaId: number, hora: string) => {
-    return seleccionados.some(
-      (s) => s.canchaId === canchaId && s.hora === hora
-    );
-  };
-
   const handleReservar = () => {
-    if (seleccionados.length === 0) {
-      Toast.show({
-        type: "error",
-        text1: "Ups!",
-        text2: "Debes seleccionar al menos un horario",
-        text1Style: { fontSize: 18 },
-        text2Style: { fontSize: 16 },
-      });
-      return;
-    }
-  
-    // Navegar a la pantalla de reserva con los datos
-    router.push({
-      pathname: '/(tabs)/reserva',
-      params: {
-        seleccionados: JSON.stringify(seleccionados)
-      }
-    });
+    console.log("Reservando:", horariosSeleccionados);
+
+    router.push("/(tabs)/reserva");
+
+    setHorariosSeleccionados([]);
+    setModalVisible(false);
   };
 
-  if (isLoading) {
-    return <TennisBallLoader />;
-  }
-
-  if (error) {
-    return (
-      <Text className="p-4">Error al cargar las canchas: {error.message}</Text>
-    );
-  }
+  if (isLoading) return <TennisBallLoader />;
+  if (error) return <Text>Error: {error.message}</Text>;
+  if (!canchas) return <Text>No hay canchas disponibles</Text>;
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
+    <SafeAreaView className="flex-1 bg-green-700" edges={["top"]}>
       {/* Header */}
-      <View className="bg-green-700 px-6 pt-16 pb-6 rounded-b-3xl shadow-md flex-row items-center justify-between">
-        <View style={{ width: 22 }} />
-        <Text className="text-white text-2xl font-SoraBold text-center">
-          Reservar
+      <View className="bg-green-700 px-6 py-4 rounded-b-3xl shadow-md flex-row items-center justify-between">
+        <View className="w-6" />
+        <Text className="text-white text-2xl font-SoraBold">
+          Reservar Cancha
         </Text>
-        <TouchableOpacity activeOpacity={0.85} onPress={signOut}>
+        <TouchableOpacity onPress={() => signOut()}>
           <LogOut size={22} color="white" />
         </TouchableOpacity>
       </View>
 
-      {/* Selector de fecha */}
-      <View className="p-4">
-        <TouchableOpacity
-          onPress={() => setMostrarDatePicker(true)}
-          activeOpacity={0.85}
-          className="w-full bg-white rounded-2xl shadow-md px-6 py-4 flex-row items-center justify-between border border-green-200"
-        >
-          <View>
-            <Text className="text-gray-500 text-sm font-SoraMedium">
-              Seleccionar fecha
-            </Text>
-            <Text className="text-lg font-SoraBold text-green-700 mt-1">
-              {fecha.toLocaleDateString("es-AR", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}
-            </Text>
-          </View>
-          <Ionicons name="calendar" size={28} color="#16a34a" />
-        </TouchableOpacity>
-      </View>
-
-      {mostrarDatePicker && (
-        <DateTimePicker
-          value={fecha}
-          mode="date"
-          display={Platform.OS === "ios" ? "spinner" : "default"}
-          minimumDate={new Date()}
-          maximumDate={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)}
-          onChange={(_, selectedDate) => {
-            setMostrarDatePicker(false);
-            if (selectedDate) {
-              setFecha(selectedDate);
-              setSeleccionados([]);
-            }
-          }}
-        />
-      )}
-
-      {/* Lista de canchas y horarios */}
-      <ScrollView className="p-4">
-        {canchas?.map((cancha) => (
-          <View
-            key={cancha.id}
-            className="bg-white rounded-2xl shadow-md p-4 mb-6"
-          >
-            <View className="flex-col">
-              <Text className="text-lg font-bold text-gray-800 mb-1 font-SoraBold">
-                {cancha.nombre}
-              </Text>
-              <Text className="text-gray-500 mb-3 font-SoraMedium">
-                Polvo de ladrillo
-              </Text>
-            </View>
-
-            <View className="flex-row flex-wrap gap-2 mt-2">
-              {cancha.disponibilidades?.map((disp) =>
-                disp.horariosDisponibles?.map((hora, index) => {
-                  const estaSeleccionado = isSeleccionado(cancha.id, hora);
-                  return (
-                    <TouchableOpacity
-                      key={`${cancha.id}-${hora}`}
-                      className={`px-3 py-3 rounded-full border w-[30%] items-center ${
-                        estaSeleccionado
-                          ? "bg-green-600 border-green-600"
-                          : "bg-green-100 border-green-500"
-                      }`}
-                      onPress={() =>
-                        toggleSeleccion(cancha.id, cancha.nombre, hora)
-                      }
-                    >
-                      <Text
-                        className={`font-SoraBold ${
-                          estaSeleccionado ? "text-white" : "text-green-700"
-                        }`}
-                      >
-                        {hora} hs.
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-
-      {/* Botón de reservar */}
-      {seleccionados.length > 0 && (
-        <View className="p-4 bg-white border-t border-gray-200">
+      <View className="flex-1 bg-gray-50">
+        {/* Date Picker */}
+        <View className="p-4">
           <TouchableOpacity
-            className="bg-green-600 py-4 rounded-2xl flex-row items-center justify-center"
-            onPress={handleReservar}
+            onPress={() => setMostrarDatePicker(true)}
+            activeOpacity={0.85}
+            className="w-full bg-white rounded-2xl shadow-md px-6 py-4 flex-row items-center justify-between border border-green-200"
           >
-            <Text className="text-white font-SoraBold text-lg">
-              Reservar {seleccionados.length} hora
-              {seleccionados.length !== 1 ? "s" : ""} ({seleccionados[0].hora} -{" "}
-              {seleccionados[seleccionados.length - 1].hora})
-            </Text>
-            <ArrowRightIcon size={20} color="white" className="ml-2" />
+            <View>
+              <Text className="text-gray-500 text-sm font-SoraMedium">
+                Seleccionar fecha
+              </Text>
+              <Text className="text-lg font-SoraBold text-green-700 mt-1">
+                {fecha.toLocaleDateString("es-AR", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                })}
+              </Text>
+            </View>
+            <Ionicons name="calendar" size={28} color="green" />
           </TouchableOpacity>
         </View>
-      )}
+
+        {mostrarDatePicker && (
+          <DateTimePicker
+            value={fecha}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            minimumDate={new Date()}
+            maximumDate={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)}
+            onChange={(_, selectedDate) => {
+              setMostrarDatePicker(false);
+              if (selectedDate) {
+                setFecha(selectedDate);
+                setHorariosSeleccionados([]);
+              }
+            }}
+          />
+        )}
+
+        {/* Lista de canchas */}
+        <FlatList
+          data={canchas}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerClassName="p-4"
+          renderItem={({ item: cancha }) => (
+            <CanchaCard
+              key={cancha.id}
+              nombre={cancha.nombre}
+              superficie="Polvo ladrillo"
+              imageId={cancha.id}
+              onPress={() => {
+                setCanchaSeleccionada(cancha);
+                setModalVisible(true);
+              }}
+            />
+          )}
+        />
+
+        {/* Modal de horarios */}
+        {canchaSeleccionada && (
+          <Modal
+            visible={modalVisible}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View className="flex-1 bg-black/50 justify-center items-center">
+              <View className="bg-white w-11/12 rounded-2xl p-6 max-h-[85%]">
+                {/* Header modal */}
+                <View className="flex-row items-center justify-between mb-4">
+                  <Text className="text-xl font-SoraBold">
+                    {canchaSeleccionada.nombre}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setModalVisible(false)}
+                    className="p-2"
+                  >
+                    <X size={24} color="#9ca3af" />
+                  </TouchableOpacity>
+                </View>
+
+                <Text className="text-gray-600 font-SoraMedium mb-3">
+                  Selecciona los horarios:
+                </Text>
+
+                {/* FlatList de horarios */}
+                <FlatList
+                  data={[
+                    ...(
+                      canchaSeleccionada.disponibilidades?.[0]
+                        ?.horariosDisponibles || []
+                    ).map((h: string) => ({ hora: h, estado: "disponible" })),
+                    ...(
+                      canchaSeleccionada.disponibilidades?.[0]
+                        ?.horariosBloqueados || []
+                    ).map((h: string) => ({ hora: h, estado: "bloqueado" })),
+                    ...(
+                      canchaSeleccionada.disponibilidades?.[0]
+                        ?.horariosOcupados || []
+                    ).map((h: string) => ({ hora: h, estado: "ocupado" })),
+                  ].sort((a, b) => a.hora.localeCompare(b.hora))}
+                  keyExtractor={(item) => item.hora}
+                  numColumns={3}
+                  columnWrapperStyle={{ justifyContent: "space-between" }}
+                  renderItem={({ item }) => {
+                    const estaSeleccionado = horariosSeleccionados.some(
+                      (s) =>
+                        s.canchaId === canchaSeleccionada.id &&
+                        s.hora === item.hora
+                    );
+                    return (
+                      <TouchableOpacity
+                        key={item.hora}
+                        disabled={item.estado !== "disponible"}
+                        onPress={() =>
+                          toggleSeleccion(canchaSeleccionada, item.hora)
+                        }
+                        className={`py-3 rounded-xl items-center w-[30%] mb-3 border-2 ${
+                          item.estado === "ocupado"
+                            ? "border-gray-300 bg-gray-100"
+                            : item.estado === "bloqueado"
+                            ? "border-red-100 bg-red-50"
+                            : estaSeleccionado
+                            ? "border-green-500 bg-green-50"
+                            : "border-gray-200 bg-white"
+                        }`}
+                      >
+                        <Text
+                          className={`text-sm font-SoraMedium ${
+                            item.estado === "ocupado"
+                              ? "text-gray-400"
+                              : item.estado === "bloqueado"
+                              ? "text-red-400"
+                              : "text-gray-800"
+                          }`}
+                        >
+                          {item.hora}
+                        </Text>
+                        <Text
+                          className={`text-xs mt-0.5 ${
+                            item.estado === "ocupado"
+                              ? "text-gray-400"
+                              : item.estado === "bloqueado"
+                              ? "text-red-300"
+                              : estaSeleccionado
+                              ? "text-green-500"
+                              : "text-gray-500"
+                          }`}
+                        >
+                          {item.estado === "ocupado"
+                            ? "Ocupado"
+                            : item.estado === "bloqueado"
+                            ? "No disponible"
+                            : estaSeleccionado
+                            ? "Seleccionado"
+                            : "Disponible"}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  }}
+                />
+
+                {/* Botones modal */}
+                <View className="flex-row gap-3 justify-between mt-6 pt-4 border-t border-gray-100">
+                  <TouchableOpacity
+                    className="flex-1 bg-gray-100 py-3 rounded-xl items-center"
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text className="text-gray-700 font-SoraMedium">
+                      Cerrar
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    className={`flex-1 py-3 rounded-xl items-center flex-row justify-center gap-2 ${
+                      horariosSeleccionados.some(
+                        (s) => s.canchaId === canchaSeleccionada.id
+                      )
+                        ? "bg-green-600"
+                        : "bg-gray-300"
+                    }`}
+                    disabled={
+                      !horariosSeleccionados.some(
+                        (s) => s.canchaId === canchaSeleccionada.id
+                      )
+                    }
+                    onPress={handleReservar}
+                  >
+                    <Text className="text-white font-SoraBold">
+                      {horariosSeleccionados.some(
+                        (s) => s.canchaId === canchaSeleccionada.id
+                      )
+                        ? `Reservar (${
+                            horariosSeleccionados.filter(
+                              (s) => s.canchaId === canchaSeleccionada.id
+                            ).length
+                          })`
+                        : "Reservar"}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
+      </View>
     </SafeAreaView>
   );
 }

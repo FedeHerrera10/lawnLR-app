@@ -148,7 +148,7 @@ export const changePasswordSchema = z
 const horarioSchema = z.string().regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/);
 
 // Esquema para la disponibilidad diaria
-const disponibilidadSchema = z.object({
+export const disponibilidadSchema = z.object({
   id: z.number().int().positive(),
   fecha: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   horariosDisponibles: z.array(horarioSchema),

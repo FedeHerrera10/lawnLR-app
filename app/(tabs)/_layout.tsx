@@ -40,7 +40,6 @@ export default function TabLayout() {
 
   const TABS = isAdmin ? TABSADMIN : TABSUSER;
 
-  console.log(TABS);
 
 
   return (

@@ -9,10 +9,13 @@ export const getCanchasByDate = async (date: string) =>{
     if (!token) throw new Error("Usuario no autenticado");
   
     try {
-      const response = await api.get(`api/canchas/obtenerTodasLasCanchasPorFecha?fecha=2025-10-01`, {
+      const response = await api.get(`api/canchas/obtenerTodasLasCanchasPorFecha?fecha=${date}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log(response.data)
+     const result = canchasSchema.safeParse(response.data);
+     if (result.success) {
+       return result.data;
+     }
       return response.data;
     } catch (error) {
        if (isAxiosError(error) && error.response) {
@@ -69,4 +72,23 @@ export const habilitarCancha = async (data: HabilitarCanchaForm) => {
 
 
 
+export const bloquearHorario = async ({id,data}: {id: number, data: any}) => {
+    const token = await getToken(); // ✅ Agregar await
+  
+    if (!token) throw new Error("Usuario no autenticado");
+  
+    try {
 
+      const response = await api.put(`/api/canchas/${id}/bloquear`, data, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+     
+      return response.data;
+    } catch (error) {
+      console.log(error);
+       if (isAxiosError(error) && error.response) {
+        throw error.response.data;
+      }
+      throw error; // ✅ Agregar esto para manejar otros errores
+    }
+}
