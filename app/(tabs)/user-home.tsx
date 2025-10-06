@@ -1,5 +1,4 @@
 import CanchaCard from "@/components/ui/canchaCard";
-import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import TennisBallLoader from "@/components/ui/Loader";
 import { Cancha } from "@/constants/types";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,6 +17,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type HorarioSeleccionado = {
   canchaId: number;
@@ -107,8 +107,12 @@ export default function UserReservasScreen() {
   
 
   const handleReservar = () => {
-    const reserva = transformar(horariosSeleccionados);
-
+    // const reserva = transformar(horariosSeleccionados);
+    const reserva = transformar(horariosSeleccionados).map((r) => ({
+      ...r,
+      fecha: fecha.toISOString().split("T")[0], // 👈 agregamos fecha seleccionada
+    }));
+    
     router.push({
       pathname: "/(tabs)/reserva",
       params: { data: JSON.stringify(reserva) },
@@ -121,13 +125,11 @@ export default function UserReservasScreen() {
   if (isLoading) return <TennisBallLoader />;
   if (error) return <Text>Error: {error.message}</Text>;
   if (!canchas) return <Text>No hay canchas disponibles</Text>;
-  
+
   return (
-    <CustomSafeAreaView 
-      style={{ flex: 1, backgroundColor: "#15803d" }}
-    >
+    <SafeAreaView className="flex-1 bg-green-700" edges={["top"]}>
       {/* Header */}
-      <View className="bg-green-700 px-6 py-6 rounded-b-3xl flex-row items-center justify-between border-0">
+      <View className="bg-green-700 px-6 py-4 rounded-b-3xl shadow-md flex-row items-center justify-between">
         <View className="w-6" />
         <Text className="text-white text-2xl font-SoraBold">
           Reservar Cancha
@@ -344,6 +346,6 @@ export default function UserReservasScreen() {
           </Modal>
         )}
       </View>
-    </CustomSafeAreaView>
+    </SafeAreaView>
   );
 }

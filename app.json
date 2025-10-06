@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "my-app",
-    "slug": "my-app",
+    "name": "lawnapp",
+    "slug": "lawnapp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "lawnapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
