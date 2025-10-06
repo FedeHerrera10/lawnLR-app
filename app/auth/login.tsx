@@ -3,7 +3,6 @@ import { CopyrightText } from "@/components/ui/text/CopyrightText";
 import * as LocalAuthentication from "expo-local-authentication";
 import { Link, router } from "expo-router";
 import * as SecureStore from "expo-secure-store";
-import { Fingerprint } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -11,10 +10,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   SafeAreaView,
-  Switch,
   Text,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { getToken } from "../../lib/secureStore";
 
@@ -145,7 +142,7 @@ export default function LoginScreen() {
                 setBiometryEnabled={setBiometryEnabled}
                 isLoginWithBiometric={showBiometricPrompt}
               />
-              {biometrySupported && (
+              {/* {biometrySupported && (
                 <TouchableOpacity
                   onPress={authenticateWithBiometrics}
                   className="mt-10 flex-row items-center"
@@ -176,7 +173,7 @@ export default function LoginScreen() {
                     trackColor={{ false: "#767577", true: "#81b0ff" }}
                   />
                 </View>
-              )}
+              )} */}
 
               <View className="flex-row justify-between items-center mt-5">
                 <Link href="/auth/resendCodeChangePassword">

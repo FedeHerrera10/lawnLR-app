@@ -49,7 +49,7 @@ export default function TennisBallLoader() {
         <View style={[styles.curve, styles.curveLeft]} />
         <View style={[styles.curve, styles.curveRight]} />
       </Animated.View>
-      <Text  className="text-gray-500 font-SoraSemiBold text-center text-xl">Espera un momento...</Text>
+      <Text  className="text-gray-500 font-SoraSemiBold text-center text-md">Espera un momento...</Text>
       
     </View>
     </View>
@@ -59,8 +59,8 @@ export default function TennisBallLoader() {
 const styles = StyleSheet.create({
  
   ball: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     borderRadius: 30,
     backgroundColor: "#f5de50",
     borderWidth: 2,
@@ -71,8 +71,8 @@ const styles = StyleSheet.create({
   },
   curve: {
     position: "absolute",
-    width: 50,
-    height: 50,
+    width: 40,
+    height: 40,
     borderRadius: 25,
     borderColor: "white",
     borderWidth: 3,

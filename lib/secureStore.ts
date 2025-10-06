@@ -24,7 +24,6 @@ export const getToken = async (): Promise<string | null> => {
 export const removeToken = async () => {
   try {
     await SecureStore.deleteItemAsync('authToken');
-    console.log('Token eliminado');
   } catch (error) {
     console.error('Error al eliminar token', error);
     return null;
@@ -36,7 +35,6 @@ export const userAndPassBiometric = async (user: string, pass: string) => {
   try {
     await SecureStore.setItemAsync('user', user);
     await SecureStore.setItemAsync('pass', pass);
-    console.log('User and pass biometric guardados');
   } catch (error) {
     console.error('Error al guardar user y pass biometric', error);
     return null;

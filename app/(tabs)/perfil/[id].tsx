@@ -2,19 +2,18 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ArrowLeft, LogOut, Pencil, Settings, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View
 } from "react-native";
 
+import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import TennisBallLoader from "@/components/ui/Loader";
 import ConfigModal from "@/components/user/config";
 import { useUser } from "@/hooks/UseContext";
 import { getUserById } from "@/lib/apis/User";
 import { useQuery } from "@tanstack/react-query";
-
   
 
 export default function PerfilScreen() {
@@ -60,10 +59,13 @@ export default function PerfilScreen() {
 
   if (usuario) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <CustomSafeAreaView 
+      
+      style={{ flex: 1, backgroundColor: "#15803d" }}
+      >
         {/* Header */}
-        <View className={isAdmin ? "bg-red-700 px-6 py-8 rounded-b-3xl shadow-md" : "bg-green-700 px-6 py-8 rounded-b-3xl shadow-md"}>
-          <View className="flex-row mt-8 justify-between items-center">
+        <View className={isAdmin ? "bg-red-700 px-6 py-6 rounded-b-3xl shadow-md" : "bg-green-700 px-6 py-6 rounded-b-3xl shadow-md"}>
+          <View className="flex-row  justify-between items-center">
             <TouchableOpacity
               activeOpacity={0.85}
               onPress={() => router.back()}
@@ -83,7 +85,7 @@ export default function PerfilScreen() {
           </View>
         </View>
 
-        <ScrollView className="flex-1 px-4 py-6">
+        <ScrollView className="flex-1 px-4 py-6 bg-gray-100">
           {/* Profile Card */}
           <View className="bg-white rounded-2xl p-6 mb-6 shadow-sm">
             <View className="items-center mb-4">
@@ -158,7 +160,7 @@ export default function PerfilScreen() {
           </View>
         </ScrollView>
         <ConfigModal showConfig={showConfig} setShowConfig={setShowConfig} />
-      </SafeAreaView>
+      </CustomSafeAreaView>
     );
   }
 }

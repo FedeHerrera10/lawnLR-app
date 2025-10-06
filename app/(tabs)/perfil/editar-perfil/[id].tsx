@@ -1,6 +1,7 @@
 import { DateInput } from "@/components/ui/inputs/DateInput";
 import { FormInput } from "@/components/ui/inputs/FormInput";
 import { NumericInput } from "@/components/ui/inputs/NumericInput";
+import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import { CopyrightText } from "@/components/ui/text/CopyrightText";
 import { userUpdate, UserUpdate } from "@/constants/types";
 import { useUser } from "@/hooks/UseContext";
@@ -8,7 +9,14 @@ import { updateUser } from "@/lib/apis/User";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ArrowLeft, Check, IdCard, Mail, Phone, User } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Check,
+  IdCard,
+  Mail,
+  Phone,
+  User,
+} from "lucide-react-native";
 import React from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -18,34 +26,29 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
-
-
-
-
 
 // Pantalla de Registro para una app de tenis usando NativeWind + React Hook Form + Zod (schema compartido)
 export default function RegistroTenis() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  
+
   const router = useRouter();
   const { user } = useUser();
   const queryClient = useQueryClient();
-  
+
   const mutation = useMutation({
     mutationFn: updateUser,
     onSuccess: async () => {
       Toast.show({
         type: "success",
         text1: "Perfil actualizado",
-        text1Style: { fontSize: 16 }
+        text1Style: { fontSize: 16 },
       });
-      
+
       await queryClient.invalidateQueries({ queryKey: ["userprofile", id] });
-      
+
       router.replace(`/perfil/${id}`);
     },
     onError: (error) => {
@@ -70,11 +73,11 @@ export default function RegistroTenis() {
       firstname: user?.firstname,
       lastname: user?.lastname,
       email: user?.email,
-      document: user?.document  || "",
+      document: user?.document || "",
       birthdate: user?.birthdate || "",
       numberPhone: user?.numberPhone || "",
     },
-    
+
     mode: "onBlur",
     reValidateMode: "onChange",
   });
@@ -82,30 +85,35 @@ export default function RegistroTenis() {
   const isAdmin = user?.roles[0].name === "ROLE_ADMIN";
 
   const onSubmit = async (data: UserUpdate) => {
-    mutation.mutate({id, data});
+    mutation.mutate({ id, data });
   };
 
   return (
-    <SafeAreaProvider>
-      <View className={isAdmin ? "bg-red-700 px-6 py-8 rounded-b-3xl shadow-md" : "bg-green-700 px-6 py-8 rounded-b-3xl shadow-md"}>
-          <View className="flex-row mt-8 justify-between items-center">
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={() => router.back()}
-              className="p-1 -ml-2"
-            >
-              <ArrowLeft size={24} color="white" />
-            </TouchableOpacity>
-            <Text className="text-white text-2xl font-SoraExtraBold">
-             Editar Perfil
-            </Text>
-            <TouchableOpacity
-              className="p-1 -mr-2"
-            >
-              </TouchableOpacity>
-          </View>
-        </View> 
-      <SafeAreaView className="flex-1 ">
+    <CustomSafeAreaView style={{ flex: 1, backgroundColor: "#15803d" }}>
+      <View
+        className={
+          isAdmin
+            ? "bg-red-700 px-6 py-6 rounded-b-3xl shadow-md"
+            : "bg-green-700 px-6 py-6 rounded-b-3xl shadow-md"
+        }
+      >
+        <View className="flex-row  justify-between items-center">
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => router.back()}
+            className="p-1 -ml-2"
+          >
+            <ArrowLeft size={24} color="white" />
+          </TouchableOpacity>
+
+          <Text className="text-white text-2xl font-SoraBold">
+            Editar Perfil
+          </Text>
+          <View className="w-6" />
+        </View>
+      </View>
+
+      <SafeAreaView className="flex-1 bg-gray-50 ">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
@@ -119,13 +127,12 @@ export default function RegistroTenis() {
           >
             <View className="bg-white/95 rounded-3xl shadow-xl p-6 mt-10">
               {/*Img Profile*/}
-              
-                <View className="flex items-center justify-center">
+
+              <View className="flex items-center justify-center">
                 <View className="w-24 h-24 rounded-full border-2 border-green-700 shadow-lg flex justify-center items-center ">
                   <User size={32} color="black" strokeWidth={2} />
                 </View>
-                </View>
-            
+              </View>
 
               {/* Username */}
               <FormInput
@@ -196,8 +203,8 @@ export default function RegistroTenis() {
                 error={errors.email?.message}
               />
 
-               {/* Número de Documento */}
-               <NumericInput
+              {/* Número de Documento */}
+              <NumericInput
                 control={control}
                 name="numberPhone"
                 label="Número de Teléfono"
@@ -206,7 +213,6 @@ export default function RegistroTenis() {
                 editable={!mutation.isPending}
                 error={errors.numberPhone?.message}
               />
-              
 
               <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
@@ -224,6 +230,6 @@ export default function RegistroTenis() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </SafeAreaProvider>
+    </CustomSafeAreaView>
   );
 }

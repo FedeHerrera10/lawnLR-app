@@ -32,11 +32,6 @@ export const FlatListCanchas = ( { data, selectedCancha, setSelectedCancha, setS
         <Text className="font-medium text-gray-900">
           {cancha.nombre}
         </Text>
-        <Text className="text-sm text-gray-500">
-          {cancha.disponibilidades.length > 0 
-            ? `Disponible (${cancha.disponibilidades[0].horariosDisponibles.length} horarios)` 
-            : "Sin horarios disponibles"}
-        </Text>
       </View>
       {selectedCancha?.id === cancha.id && (
         <Check size={20} color="#10B981" />

@@ -8,22 +8,19 @@ import {
   HorarioProfesor,
 } from "@/constants/types";
 import { useAuth } from "@/hooks/useAuth";
-import { getCanchas, habilitarCancha } from "@/lib/apis/Canchas";
+import {
+  getCanchas,
+  getDisponibilidades,
+  habilitarCancha,
+} from "@/lib/apis/Canchas";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { ArrowLeft, Check, ChevronDown, LogOut, X } from "lucide-react-native";
+import React, { useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
 import {
-  ArrowLeft,
-  Check,
-  ChevronDown,
-  Clock,
-  LogOut,
-  X,
-} from "lucide-react-native";
-import React, { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
-import {
+  Alert,
   Modal,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -31,51 +28,51 @@ import {
   View,
 } from "react-native";
 
-import { HorarioProfesorComponent } from "@/components/ui/horarioProfesor";
+import HorarioProfesorComponent from "@/components/ui/HorarioProfesorComponent";
+import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import { getMonthRange } from "@/utils/DateUtil";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Toast from "react-native-toast-message";
 
-// --------------------
-// Helpers
-// --------------------
-
-// const mapDia = (dia: DiaSemana) => {
-//   const map: Record<DiaSemana, string> = {
-//     Lunes: "MONDAY",
-//     Martes: "TUESDAY",
-//     Miércoles: "WEDNESDAY",
-//     Jueves: "THURSDAY",
-//     Viernes: "FRIDAY",
-//     Sábado: "SATURDAY",
-//     Domingo: "SUNDAY",
-//   };
-//   return map[dia];
-// };
-
-// --------------------
-// Main Component
-// --------------------
 export default function AdminCanchas() {
   const { signOut } = useAuth();
+  const queryClient = useQueryClient();
+
   const [selectedCancha, setSelectedCancha] = useState<Cancha | null>(null);
-
-  const [showCanchaModal, setShowCanchaModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState<Date | null>(null);
+  const [showCanchaModal, setShowCanchaModal] = useState(false);
   const [showMonthModal, setShowMonthModal] = useState(false);
-
-  // Add this function to handle month selection
-  const handleMonthSelect = (month: number) => {
-    const newDate = new Date();
-    newDate.setMonth(month);
-    setSelectedMonth(newDate);
-    setShowMonthModal(false);
-  };
+  const [firstDay, setFirstDay] = useState<string>("");
+  const [lastDay, setLastDay] = useState<string>("");
   const [horariosProfesores, setHorariosProfesores] = useState<
     HorarioProfesor[]
   >([]);
-  const queryClient = useQueryClient();
-  // ...
+
+  // -------------------- Queries --------------------
+  const {
+    data: canchas,
+    error: errorCanchas,
+    isLoading: isLoadingCanchas,
+  } = useQuery({
+    queryKey: ["canchas"],
+    queryFn: () => getCanchas(),
+  });
+
+  const {
+    data: disponibilidades,
+    refetch,
+    isLoading: isLoadingDisponibilidades,
+  } = useQuery({
+    queryKey: ["disponibilidades", selectedCancha?.id, firstDay, lastDay],
+    queryFn: () =>
+      getDisponibilidades({
+        id: selectedCancha?.id || 0,
+        dateInicio: firstDay,
+        dateFin: lastDay,
+      }),
+    enabled: !!selectedCancha && !!firstDay && !!lastDay,
+  });
+
   const {
     control,
     handleSubmit,
@@ -94,9 +91,59 @@ export default function AdminCanchas() {
     reValidateMode: "onChange",
   });
 
-  // --------------------
-  // Mutation
-  // --------------------
+  // -------------------- Focus Effect --------------------
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setSelectedCancha(null);
+        setSelectedMonth(null);
+        setHorariosProfesores([]);
+        setShowCanchaModal(false);
+        setShowMonthModal(false);
+        setFirstDay("");
+        setLastDay("");
+      };
+    }, [])
+  );
+
+  // -------------------- Handle Month Selection --------------------
+  const handleMonthSelect = (month: number) => {
+    const today = new Date();
+    const newDate = new Date(today.getFullYear(), month, 1);
+    setSelectedMonth(newDate);
+    setShowMonthModal(false);
+
+    const { firstDay: fd, lastDay: ld } = getMonthRange(
+      newDate.getFullYear(),
+      month + 1
+    );
+    setFirstDay(fd);
+    setLastDay(ld);
+
+
+    if (selectedCancha) {
+      //refetch(); // siempre con los valores correctos ya en state
+    }
+  };
+
+  // -------------------- Handle Cancha Change --------------------
+  const handleChangeCancha = (cancha: Cancha) => {
+    setSelectedCancha(cancha);
+
+    // Si ya hay mes seleccionado, hacemos refetch directo
+    if (selectedMonth) {
+      const { firstDay: fd, lastDay: ld } = getMonthRange(
+        selectedMonth.getFullYear(),
+        selectedMonth.getMonth() + 1
+      );
+      setFirstDay(fd);
+      setLastDay(ld);
+      //refetch();
+    }
+    setShowCanchaModal(false);
+  };
+
+  // -------------------- Mutation --------------------
   const mutation = useMutation({
     mutationFn: habilitarCancha,
     onSuccess: () => {
@@ -105,6 +152,9 @@ export default function AdminCanchas() {
         text1: "Cancha habilitada correctamente ✅",
         text1Style: { fontSize: 16 },
       });
+      setSelectedCancha(null);
+      setSelectedMonth(null);
+      setHorariosProfesores([]);
       queryClient.invalidateQueries({ queryKey: ["canchasxfecha"] });
       router.back();
     },
@@ -120,73 +170,87 @@ export default function AdminCanchas() {
     },
   });
 
-  // --------------------
-  // Queries
-  // --------------------
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["canchas"],
-    queryFn: () => getCanchas(),
-  });
-
-  if (isLoading) return <TennisBallLoader />;
-  if (error) return <Text>Error al cargar canchas</Text>;
-
-  // --------------------
-  // Submit
-  // --------------------
+  // -------------------- Submit --------------------
   const onSubmit = (values: HabilitarCanchaForm) => {
-    // Alert.alert("Cancha habilitada correctamente ✅");
-    if (!selectedCancha) return;
-    if (!selectedMonth)
+    if (!selectedCancha || !selectedMonth) {
       return Toast.show({
         type: "error",
         text1: "Error",
-        text2: "Debe seleccionar un mes",
+        text2: "Debe seleccionar cancha y mes",
         text1Style: { fontSize: 16 },
         text2Style: { fontSize: 14 },
       });
+    }
 
-    const { firstDay, lastDay } = getMonthRange(
+    const { firstDay: fd, lastDay: ld } = getMonthRange(
       selectedMonth.getFullYear(),
       selectedMonth.getMonth() + 1
     );
 
     const payload = {
       canchaId: selectedCancha.id,
-      fechaInicio: firstDay,
-      fechaFin: lastDay,
+      fechaInicio: fd,
+      fechaFin: ld,
       horaInicio: "08:00",
       horaFin: "22:00",
-      horariosProfesores: [],
+      horariosProfesores,
     };
 
-
-    mutation.mutate(payload);
+    if(horariosProfesores.length === 0){
+      
+    Alert.alert(
+      "Confirmación",
+      "¿Desea habilitar la cancha sin horarios de profesores?",
+      [
+        {
+          text: "Cancelar",
+          style: "cancel",
+          onPress: () => console.log("Cancelado"),
+        },
+        {
+          text: "Aceptar",
+          onPress: () => {
+            mutation.mutate(payload);
+            return;
+          },
+        },
+      ],
+      { cancelable: true }
+    );
+    } else{
+      mutation.mutate(payload);
+    }
   };
 
+  if (isLoadingCanchas || isLoadingDisponibilidades)
+    return <TennisBallLoader />;
+  if (errorCanchas) return <Text>Error al cargar canchas</Text>;
+  
   return (
-    <SafeAreaView className="flex-1 bg-gray-50 font-Sora">
+    <CustomSafeAreaView style={{ flex: 1, backgroundColor: "#b91c1c" }}>
       {/* Header */}
-      <View className="bg-red-700 px-6 py-8 rounded-b-3xl shadow-md flex-row items-center justify-between">
-        <TouchableOpacity activeOpacity={0.85} onPress={() => router.back()}>
-          <ArrowLeft size={22} color="white" style={{ marginTop: 32 }} />
+      <View className="bg-red-700 px-6 py-7 rounded-b-3xl shadow-md flex-row items-center justify-between">
+        <TouchableOpacity
+          onPress={() => router.replace("/(tabs)/administracion")}
+        >
+          <ArrowLeft size={22} color="white" />
         </TouchableOpacity>
-        <Text className="text-white mt-10 text-2xl font-bold text-center font-Sora">
+        <Text className="text-white text-2xl text-center font-SoraBold">
           Habilitación de Canchas
         </Text>
         <TouchableOpacity onPress={signOut}>
-          <LogOut size={22} color="white" style={{ marginTop: 32 }} />
+          <LogOut size={22} color="white" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView className="flex-1 p-4">
-        {/* Selector de Cancha */}
+      <ScrollView className="flex-1 p-4 bg-gray-100">
+        {/* Selector Cancha */}
         <View className="mb-6">
           <Text className="text-gray-700 font-medium mb-2 text-base font-SoraBold">
             Seleccionar Cancha
           </Text>
           <TouchableOpacity
-            className="border border-gray-300 bg-white p-4 rounded-xl flex-row justify-between items-center "
+            className="border border-gray-300 bg-white p-4 rounded-xl flex-row justify-between items-center"
             onPress={() => setShowCanchaModal(true)}
           >
             <Text
@@ -197,175 +261,68 @@ export default function AdminCanchas() {
               }`}
             >
               {selectedCancha
-                ? `${selectedCancha.nombre} `
+                ? selectedCancha.nombre
                 : "Seleccione una cancha..."}
             </Text>
             <ChevronDown size={20} color="#6B7280" />
           </TouchableOpacity>
-          {selectedCancha && (
-            <TouchableOpacity
-              className="absolute right-10 top-10 p-2"
-              onPress={() => setSelectedCancha(null)}
-            >
-              <X size={16} color="#EF4444" />
-            </TouchableOpacity>
-          )}
         </View>
 
+        {/* Selección Mes */}
         {selectedCancha && (
-          <>
-            <View className="mb-6 bg-white p-4 rounded-xl shadow-sm">
-              <View className="flex-row  items-center mb-3">
-                <Text className="text-gray-700 font-SoraBold text-base mr-2">
-                  Horario de Habilitación{" "}
-                </Text>
-                <Clock size={16} color="#6B7280" />
-              </View>
-
-              <View className="flex-row justify-between">
-                <Controller
-                  control={control}
-                  name="horaInicio"
-                  render={({ field: { value } }) => (
-                    <View className="w-[48%]">
-                      <Text className="text-gray-600 mb-1 font-SoraMedium">
-                        Hora inicio
-                      </Text>
-                      <Text>{value}</Text>
-                    </View>
-                  )}
-                />
-
-                <Controller
-                  control={control}
-                  name="horaFin"
-                  render={({ field: { value } }) => (
-                    <View className="w-[48%]">
-                      <Text className="text-gray-600 mb-1 font-SoraMedium">
-                        Hora fin
-                      </Text>
-                      <Text>{value}</Text>
-                    </View>
-                  )}
-                />
-              </View>
-            </View>
-
-            <View className="mb-6 bg-white p-4 rounded-xl shadow-sm">
-              <Text className="text-gray-700 font-SoraBold text-base mb-3">
-                Mes de Habilitación
-              </Text>
-              <TouchableOpacity
-                className="border border-gray-200 p-3 rounded-lg"
-                onPress={() => setShowMonthModal(true)}
-              >
-                <Text className="text-gray-700">
-                  {selectedMonth
-                    ? new Intl.DateTimeFormat("es-AR", {
-                        month: "long",
-                        year: "numeric",
-                      }).format(selectedMonth)
-                    : "Seleccionar mes"}
-                </Text>
-              </TouchableOpacity>
-              <Text className="text-red-500 text-sm font-SoraSemiBold">
-                {errors.fechaInicio?.message}
-              </Text>
-            </View>
-
-            <Modal
-              visible={showMonthModal}
-              transparent={true}
-              animationType="slide"
-              onRequestClose={() => setShowMonthModal(false)}
+          <View className="mb-6 bg-white p-4 rounded-xl shadow-sm">
+            <Text className="text-gray-700 font-SoraBold text-base mb-3">
+              Mes de Habilitación
+            </Text>
+            <TouchableOpacity
+              className="border border-gray-200 p-3 rounded-lg"
+              onPress={() => setShowMonthModal(true)}
             >
-              <View className="flex-1 justify-end bg-black/50">
-                <View className="bg-white rounded-t-3xl p-6 max-h-[60%]">
-                  <View className="flex-row justify-between items-center mb-4">
-                    <Text className="text-xl font-SoraBold">
-                      Seleccionar Mes
-                    </Text>
-                    <TouchableOpacity onPress={() => setShowMonthModal(false)}>
-                      <X size={24} color="#6B7280" />
-                    </TouchableOpacity>
-                  </View>
-
-                  <ScrollView className="mb-4">
-                    {Array.from({ length: 12 }).map((_, index) => {
-                      const date = new Date();
-                      date.setMonth(index);
-                      const monthName = new Intl.DateTimeFormat("es-AR", {
-                        month: "long",
-                      }).format(date);
-                      const isSelected = selectedMonth?.getMonth() === index;
-
-                      return (
-                        <TouchableOpacity
-                          key={index}
-                          className="py-3 border-b border-gray-100 flex-row items-center"
-                          onPress={() => handleMonthSelect(index)}
-                        >
-                          <View
-                            className={`w-5 h-5 rounded-full border-2 ${
-                              isSelected ? "border-red-600" : "border-gray-300"
-                            } mr-3 justify-center items-center`}
-                          >
-                            {isSelected && (
-                              <View className="w-3 h-3 bg-red-600 rounded-full" />
-                            )}
-                          </View>
-                          <Text
-                            className={`text-base ${
-                              isSelected
-                                ? "font-SoraBold text-gray-900"
-                                : "text-gray-700"
-                            }`}
-                          >
-                            {monthName.charAt(0).toUpperCase() +
-                              monthName.slice(1)}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
-
-                  <View className="flex-row justify-end space-x-3 pt-2 border-t border-gray-100">
-                    <TouchableOpacity
-                      className="px-4 py-2 rounded-lg"
-                      onPress={() => setShowMonthModal(false)}
-                    >
-                      <Text className="text-red-600 font-SoraMedium">
-                        Cancelar
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            </Modal>
-
-            <HorarioProfesorComponent
-              horariosProfesores={horariosProfesores}
-              setHorariosProfesores={setHorariosProfesores}
-            />
-          </>
+              <Text className="text-gray-700">
+                {selectedMonth
+                  ? new Intl.DateTimeFormat("es-AR", {
+                      month: "long",
+                      year: "numeric",
+                    }).format(selectedMonth)
+                  : "Seleccionar mes"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
 
-        {/* Botón de confirmación */}
-        {selectedCancha && (
+        {/* Horario de Profesores */}
+        {selectedMonth && disponibilidades && disponibilidades.length === 0 && (
+          <HorarioProfesorComponent
+            horariosProfesores={[]}
+            setHorariosProfesores={setHorariosProfesores}
+          />
+        )}
+
+        {/* Mensaje de disponibilidad */}
+        {disponibilidades && disponibilidades.length > 0 && (
+          <View className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <Text className="text-blue-800 text-center">
+              Este mes ya está habilitado.
+            </Text>
+          </View>
+        )}
+
+        {/* Botón Habilitar */}
+        {selectedCancha && selectedMonth && disponibilidades.length === 0 && (
           <TouchableOpacity
             onPress={handleSubmit(onSubmit)}
-            disabled={mutation.isPending}
-            className="mt-4 mb-10 bg-green-700 rounded-xl py-4  shadow-md flex-row gap-2 justify-center items-center"
+            disabled={mutation.isPending || isLoadingDisponibilidades}
+            className="mt-4 mb-10 bg-green-700 rounded-xl py-4 shadow-md flex-row gap-2 justify-center items-center"
           >
             <Text className="text-white font-SoraExtraBold text-lg">
-              {mutation.isPending ? "Actualizando..." : "Actualizar"}
+              {mutation.isPending ? "Habilitando..." : "Habilitar"}
             </Text>
             <Check size={20} color="white" strokeWidth={2} />
           </TouchableOpacity>
         )}
       </ScrollView>
 
-      {/* Modal de selección de cancha */}
+      {/* Modal Cancha */}
       <Modal
         visible={showCanchaModal}
         animationType="slide"
@@ -376,7 +333,6 @@ export default function AdminCanchas() {
           <TouchableWithoutFeedback onPress={() => setShowCanchaModal(false)}>
             <View className="flex-1" />
           </TouchableWithoutFeedback>
-
           <View className="bg-white rounded-t-3xl max-h-[80%] overflow-hidden">
             <View className="p-4 border-b border-gray-200 flex-row justify-between items-center">
               <Text className="text-lg font-SoraBold text-gray-900">
@@ -386,16 +342,81 @@ export default function AdminCanchas() {
                 <X size={24} color="#6B7280" />
               </TouchableOpacity>
             </View>
-
             <FlatListCanchas
-              data={data || []}
+              data={canchas || []}
               selectedCancha={selectedCancha}
-              setSelectedCancha={setSelectedCancha}
+              setSelectedCancha={handleChangeCancha}
               setShowCanchaModal={setShowCanchaModal}
             />
           </View>
         </View>
       </Modal>
-    </SafeAreaView>
+
+      {/* Modal Mes */}
+      <Modal
+        visible={showMonthModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowMonthModal(false)}
+      >
+        <View className="flex-1 justify-end bg-black/50">
+          <View className="bg-white rounded-t-3xl p-6 max-h-[60%]">
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-xl font-SoraBold">Seleccionar Mes</Text>
+              <TouchableOpacity onPress={() => setShowMonthModal(false)}>
+                <X size={24} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView className="mb-4">
+              {Array.from({ length: 12 }).map((_, index) => {
+                const date = new Date();
+                date.setMonth(index);
+                const monthName = new Intl.DateTimeFormat("es-AR", {
+                  month: "long",
+                }).format(date);
+                const isSelected = selectedMonth?.getMonth() === index;
+
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    className="py-3 border-b border-gray-100 flex-row items-center"
+                    onPress={() => handleMonthSelect(index)}
+                  >
+                    <View
+                      className={`w-5 h-5 rounded-full border-2 ${
+                        isSelected ? "border-red-600" : "border-gray-300"
+                      } mr-3 justify-center items-center`}
+                    >
+                      {isSelected && (
+                        <View className="w-3 h-3 bg-red-600 rounded-full" />
+                      )}
+                    </View>
+                    <Text
+                      className={`text-base ${
+                        isSelected
+                          ? "font-SoraBold text-gray-900"
+                          : "text-gray-700"
+                      }`}
+                    >
+                      {monthName.charAt(0).toUpperCase() + monthName.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+
+            <View className="flex-row justify-end space-x-3 pt-2 border-t border-gray-100">
+              <TouchableOpacity
+                className="px-4 py-2 rounded-lg"
+                onPress={() => setShowMonthModal(false)}
+              >
+                <Text className="text-red-600 font-SoraMedium">Cancelar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </CustomSafeAreaView>
   );
 }
