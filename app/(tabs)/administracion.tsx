@@ -1,9 +1,15 @@
 import CanchaCard from "@/components/ui/canchaCard";
+import CustomToast from "@/components/ui/CustomToast";
+import CustomHeader from "@/components/ui/layout/CustomHeader";
 import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import TennisBallLoader from "@/components/ui/Loader";
 import { Cancha } from "@/constants/types";
 import { useAuth } from "@/hooks/useAuth";
-import { bloquearHorario, desbloquearHorario, getCanchasByDate } from "@/lib/apis/Canchas";
+import {
+  bloquearHorario,
+  desbloquearHorario,
+  getCanchasByDate,
+} from "@/lib/apis/Canchas";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -17,9 +23,8 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
-import Toast from "react-native-toast-message";
 
 export default function Administracion() {
   const [fecha, setFecha] = useState(new Date());
@@ -27,61 +32,59 @@ export default function Administracion() {
   const { signOut } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data, error, isLoading } = useQuery({
-    queryKey: ["canchasxfecha", fecha],
-    queryFn: () => getCanchasByDate(fecha.toISOString().split("T")[0]),
-    enabled: !!fecha,
-    staleTime: 0,
-  });
-
-  const bloquearMutation = useMutation({
-    mutationFn: bloquearHorario,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["canchasxfecha", fecha] });
-      Toast.show({
-        type: "success",
-        text1: "Bloqueos guardados correctamente",
-        text1Style: { fontSize: 16 },
-      });
-    },
-    onError: (error: any) => {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: error.message,
-        text1Style: { fontSize: 16 },
-        text2Style: { fontSize: 14 },
-      });
-    },
-  });
-
-  const desbloquearMutation = useMutation({
-    mutationFn: desbloquearHorario,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["canchasxfecha", fecha] });
-    },
-    onError: (error: any) => {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: error.message,
-        text1Style: { fontSize: 16 },
-        text2Style: { fontSize: 14 },
-      });
-    },
-  });
-
+  /**
+   * Estados del componente.
+   */
   const [modalVisible, setModalVisible] = useState(false);
   const [canchaSeleccionada, setCanchaSeleccionada] = useState<Cancha | null>(null);
   const [bloqueadosOriginales, setBloqueadosOriginales] = useState<string[]>([]);
   const [bloqueadosTemp, setBloqueadosTemp] = useState<string[]>([]);
   const [desbloqueados, setDesbloqueados] = useState<string[]>([]);
-
-  if (isLoading) return <TennisBallLoader />;
-  if (!data) return <Text>Error: {error?.message}</Text>;
-
   const fechaKey = fecha.toISOString().split("T")[0];
+  
+  
+  /**
+   * @description Obtiene las canchas disponibles para la fecha seleccionada
+   */
+  const { data, error, isLoading } = useQuery({
+    queryKey: ["canchasxfecha", fecha],
+    queryFn: () => getCanchasByDate(fechaKey),
+    enabled: !!fecha,
+    staleTime: 0,
+  });
 
+  /**
+   * @description Bloquea los horarios de una cancha
+   */
+  const bloquearMutation = useMutation({
+    mutationFn: bloquearHorario,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["canchasxfecha", fecha] });
+      CustomToast({type: "success", title: "Success", message: "Bloqueos guardados correctamente" });
+    },
+    onError: (error: any) => {
+      CustomToast({type: "error", title: "Error", message: error.message });
+    },
+  });
+
+  /**
+   * @description Desbloquea los horarios de una cancha
+   */
+  const desbloquearMutation = useMutation({
+    mutationFn: desbloquearHorario,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["canchasxfecha", fecha] });
+      CustomToast({type: "success", title: "Success", message: "Desbloqueos guardados correctamente" });
+    },
+    onError: (error: any) => {
+      CustomToast({type: "error", title: "Error", message: error.message });
+    },
+  });
+
+  /**
+   * @description Togglea el bloqueo de una hora
+   * @param hora Hora a bloquear/desbloquear
+   */
   const toggleBloqueo = (hora: string) => {
     const estabaBloqueadoOriginal = bloqueadosOriginales.includes(hora);
 
@@ -100,6 +103,9 @@ export default function Administracion() {
     }
   };
 
+  /**
+   * @description Guarda los bloqueos de una cancha
+   */
   const handleGuardarBloqueos = async () => {
     if (!canchaSeleccionada) return;
 
@@ -107,40 +113,51 @@ export default function Administracion() {
       (h) => !bloqueadosOriginales.includes(h)
     );
 
-    console.log("nuevosBloqueos", nuevosBloqueos);
-    console.log("desbloqueados", desbloqueados);
-
     await bloquearMutation.mutateAsync({
       id: canchaSeleccionada.id,
-      data: { 
-        fecha: fechaKey, 
-        horarios: nuevosBloqueos, 
+      data: {
+        fecha: fechaKey,
+        horarios: nuevosBloqueos,
       },
     });
 
     await desbloquearMutation.mutateAsync({
       id: canchaSeleccionada.id,
-      data: { 
-        fecha: fechaKey, 
-        horarios: desbloqueados, 
+      data: {
+        fecha: fechaKey,
+        horarios: desbloqueados,
       },
     });
-
     setModalVisible(false);
   };
-
+  
+  
+  if (isLoading) return <TennisBallLoader />;
+  
+  if (!data) return CustomToast({type: "error", title: "Error", message: error?.message || "Error al obtener las canchas" });;
+  
+  
   return (
     <CustomSafeAreaView style={{ flex: 1, backgroundColor: "#b91c1c" }}>
       {/* Header */}
-      <View className="bg-red-700 px-6 py-7 flex-row items-center justify-between">
-        <TouchableOpacity onPress={() => router.push("/(tabs)/canchas/admin-canchas")}>
-          <Settings2 size={22} color="white" />
-        </TouchableOpacity>
-        <Text className="text-white text-2xl font-SoraBold">Administración</Text>
-        <TouchableOpacity onPress={() => signOut()}>
-          <LogOut size={22} color="white" />
-        </TouchableOpacity>
-      </View>
+      <CustomHeader
+        title="Administración"
+        subtitle="Administra y habilita canchas"
+        leftButton={
+          <TouchableOpacity
+            onPress={() => router.push("/(tabs)/canchas/admin-canchas")}
+          >
+            <Settings2 size={22} color="white" />
+          </TouchableOpacity>
+        }
+        rightButton={
+          <TouchableOpacity onPress={() => signOut()}>
+            <LogOut size={22} color="white" />
+          </TouchableOpacity>
+        }
+        containerClassName="bg-red-700"
+        backgroundColor="red"
+      />
 
       <View className="flex-1 bg-gray-50">
         {/* Selector de fecha */}
@@ -151,7 +168,9 @@ export default function Administracion() {
             className="w-full bg-white rounded-2xl shadow-md px-6 py-4 flex-row items-center justify-between border border-red-200"
           >
             <View>
-              <Text className="text-gray-500 text-sm font-SoraMedium">Seleccionar fecha</Text>
+              <Text className="text-gray-500 text-sm font-SoraMedium">
+                Seleccionar fecha
+              </Text>
               <Text className="text-lg font-SoraBold text-red-700 mt-1">
                 {fecha.toLocaleDateString("es-AR", {
                   day: "2-digit",
@@ -188,7 +207,8 @@ export default function Administracion() {
               imageId={cancha.id}
               onPress={() => {
                 setCanchaSeleccionada(cancha);
-                const bloqueadosBackend = cancha.disponibilidades?.[0]?.horariosBloqueados || [];
+                const bloqueadosBackend =
+                  cancha.disponibilidades?.[0]?.horariosBloqueados || [];
                 setBloqueadosOriginales(bloqueadosBackend);
                 setBloqueadosTemp(bloqueadosBackend);
                 setDesbloqueados([]);
@@ -200,11 +220,17 @@ export default function Administracion() {
 
         {/* Modal de horarios */}
         {canchaSeleccionada && (
-          <Modal visible={modalVisible} animationType="slide" transparent={true}>
+          <Modal
+            visible={modalVisible}
+            animationType="slide"
+            transparent={true}
+          >
             <View className="flex-1 bg-black/50 justify-center items-center">
               <View className="bg-white w-11/12 rounded-2xl p-8 max-h-[70%]">
                 <View className="flex-row items-center justify-between">
-                  <Text className="text-xl font-bold">{canchaSeleccionada.nombre}</Text>
+                  <Text className="text-xl font-bold">
+                    {canchaSeleccionada.nombre}
+                  </Text>
                   <TouchableOpacity onPress={() => setModalVisible(false)}>
                     <X size={22} color="black" />
                   </TouchableOpacity>
@@ -214,15 +240,18 @@ export default function Administracion() {
 
                 <FlatList
                   data={[
-                    ...(canchaSeleccionada.disponibilidades?.[0]?.horariosDisponibles || []).map(
-                      (h: string) => ({ hora: h, estado: "disponible" })
-                    ),
-                    ...(canchaSeleccionada.disponibilidades?.[0]?.horariosBloqueados || []).map(
-                      (h: string) => ({ hora: h, estado: "bloqueado" })
-                    ),
-                    ...(canchaSeleccionada.disponibilidades?.[0]?.horariosOcupados || []).map(
-                      (h: string) => ({ hora: h, estado: "ocupado" })
-                    ),
+                    ...(
+                      canchaSeleccionada.disponibilidades?.[0]
+                        ?.horariosDisponibles || []
+                    ).map((h: string) => ({ hora: h, estado: "disponible" })),
+                    ...(
+                      canchaSeleccionada.disponibilidades?.[0]
+                        ?.horariosBloqueados || []
+                    ).map((h: string) => ({ hora: h, estado: "bloqueado" })),
+                    ...(
+                      canchaSeleccionada.disponibilidades?.[0]
+                        ?.horariosOcupados || []
+                    ).map((h: string) => ({ hora: h, estado: "ocupado" })),
                   ].sort((a, b) => {
                     const toMinutes = (hora: string) => {
                       const [h, m] = hora.split(":").map(Number);
@@ -256,17 +285,29 @@ export default function Administracion() {
                       >
                         <Text
                           className={`text-sm font-bold ${
-                            ocupado ? "text-gray-600" : bloqueado ? "text-red-600" : "text-gray-800"
+                            ocupado
+                              ? "text-gray-600"
+                              : bloqueado
+                              ? "text-red-600"
+                              : "text-gray-800"
                           }`}
                         >
                           {hora}
                         </Text>
                         <Text
                           className={`text-xs mt-0.5 ${
-                            ocupado ? "text-gray-500" : bloqueado ? "text-red-400" : "text-green-500"
+                            ocupado
+                              ? "text-gray-500"
+                              : bloqueado
+                              ? "text-red-400"
+                              : "text-green-500"
                           }`}
                         >
-                          {ocupado ? "Ocupado" : bloqueado ? "Bloqueado" : "Disponible"}
+                          {ocupado
+                            ? "Ocupado"
+                            : bloqueado
+                            ? "Bloqueado"
+                            : "Disponible"}
                         </Text>
                       </TouchableOpacity>
                     );
@@ -279,7 +320,9 @@ export default function Administracion() {
                     className="flex-1 bg-gray-100 py-3 rounded-xl items-center"
                     onPress={() => setModalVisible(false)}
                   >
-                    <Text className="text-gray-700 font-SoraMedium">Cancelar</Text>
+                    <Text className="text-gray-700 font-SoraMedium">
+                      Cancelar
+                    </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     className="flex-1 bg-red-600 py-3 rounded-xl items-center flex-row justify-center gap-2"

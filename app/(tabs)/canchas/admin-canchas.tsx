@@ -28,11 +28,12 @@ import {
   View,
 } from "react-native";
 
+import CustomToast from "@/components/ui/CustomToast";
 import HorarioProfesorComponent from "@/components/ui/HorarioProfesorComponent";
+import CustomHeader from "@/components/ui/layout/CustomHeader";
 import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import { getMonthRange } from "@/utils/DateUtil";
 import { zodResolver } from "@hookform/resolvers/zod";
-import Toast from "react-native-toast-message";
 
 export default function AdminCanchas() {
   const { signOut } = useAuth();
@@ -58,26 +59,19 @@ export default function AdminCanchas() {
     queryFn: () => getCanchas(),
   });
 
-  const {
-    data: disponibilidades,
-    refetch,
-    isLoading: isLoadingDisponibilidades,
-  } = useQuery({
-    queryKey: ["disponibilidades", selectedCancha?.id, firstDay, lastDay],
-    queryFn: () =>
-      getDisponibilidades({
-        id: selectedCancha?.id || 0,
-        dateInicio: firstDay,
-        dateFin: lastDay,
-      }),
-    enabled: !!selectedCancha && !!firstDay && !!lastDay,
-  });
+  const { data: disponibilidades, isLoading: isLoadingDisponibilidades } =
+    useQuery({
+      queryKey: ["disponibilidades", selectedCancha?.id, firstDay, lastDay],
+      queryFn: () =>
+        getDisponibilidades({
+          id: selectedCancha?.id || 0,
+          dateInicio: firstDay,
+          dateFin: lastDay,
+        }),
+      enabled: !!selectedCancha && !!firstDay && !!lastDay,
+    });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<HabilitarCanchaForm>({
+  const { handleSubmit } = useForm<HabilitarCanchaForm>({
     resolver: zodResolver(habilitarCanchaSchema),
     defaultValues: {
       canchaId: 1,
@@ -120,7 +114,6 @@ export default function AdminCanchas() {
     setFirstDay(fd);
     setLastDay(ld);
 
-
     if (selectedCancha) {
       //refetch(); // siempre con los valores correctos ya en state
     }
@@ -147,10 +140,10 @@ export default function AdminCanchas() {
   const mutation = useMutation({
     mutationFn: habilitarCancha,
     onSuccess: () => {
-      Toast.show({
+      CustomToast({
         type: "success",
-        text1: "Cancha habilitada correctamente ✅",
-        text1Style: { fontSize: 16 },
+        title: "Cancha habilitada correctamente",
+        message: "",
       });
       setSelectedCancha(null);
       setSelectedMonth(null);
@@ -159,13 +152,10 @@ export default function AdminCanchas() {
       router.back();
     },
     onError: (error) => {
-      console.error("Error al habilitar cancha:", error);
-      Toast.show({
+      CustomToast({
         type: "error",
-        text1: "Error",
-        text2: "Error al habilitar cancha",
-        text1Style: { fontSize: 16 },
-        text2Style: { fontSize: 14 },
+        title: "Error",
+        message: "Error al habilitar cancha",
       });
     },
   });
@@ -173,12 +163,10 @@ export default function AdminCanchas() {
   // -------------------- Submit --------------------
   const onSubmit = (values: HabilitarCanchaForm) => {
     if (!selectedCancha || !selectedMonth) {
-      return Toast.show({
+      return CustomToast({
         type: "error",
-        text1: "Error",
-        text2: "Debe seleccionar cancha y mes",
-        text1Style: { fontSize: 16 },
-        text2Style: { fontSize: 14 },
+        title: "Error",
+        message: "Debe seleccionar cancha y mes",
       });
     }
 
@@ -196,52 +184,62 @@ export default function AdminCanchas() {
       horariosProfesores,
     };
 
-    if(horariosProfesores.length === 0){
-      
-    Alert.alert(
-      "Confirmación",
-      "¿Desea habilitar la cancha sin horarios de profesores?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel",
-          onPress: () => console.log("Cancelado"),
-        },
-        {
-          text: "Aceptar",
-          onPress: () => {
-            mutation.mutate(payload);
-            return;
+    if (horariosProfesores.length === 0) {
+      Alert.alert(
+        "Confirmación",
+        "¿Desea habilitar la cancha sin horarios de profesores?",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel",
+            onPress: () => {},
           },
-        },
-      ],
-      { cancelable: true }
-    );
-    } else{
+          {
+            text: "Aceptar",
+            onPress: () => {
+              mutation.mutate(payload);
+              return;
+            },
+          },
+        ],
+        { cancelable: true }
+      );
+    } else {
       mutation.mutate(payload);
     }
   };
 
   if (isLoadingCanchas || isLoadingDisponibilidades)
     return <TennisBallLoader />;
-  if (errorCanchas) return <Text>Error al cargar canchas</Text>;
-  
+
+  if (errorCanchas)
+    return CustomToast({
+      type: "error",
+      title: "Error",
+      message: "Error al cargar canchas",
+    });
+
   return (
     <CustomSafeAreaView style={{ flex: 1, backgroundColor: "#b91c1c" }}>
       {/* Header */}
-      <View className="bg-red-700 px-6 py-7 rounded-b-3xl shadow-md flex-row items-center justify-between">
-        <TouchableOpacity
-          onPress={() => router.replace("/(tabs)/administracion")}
-        >
-          <ArrowLeft size={22} color="white" />
-        </TouchableOpacity>
-        <Text className="text-white text-2xl text-center font-SoraBold">
-          Habilitación de Canchas
-        </Text>
-        <TouchableOpacity onPress={signOut}>
-          <LogOut size={22} color="white" />
-        </TouchableOpacity>
-      </View>
+      <CustomHeader
+        title="Habilitacion de canchas"
+        subtitle="Seleccione la cancha y el mes"
+        leftButton={
+          <TouchableOpacity
+            onPress={() => router.replace("/(tabs)/administracion")}
+          >
+            <ArrowLeft size={22} color="white" />
+          </TouchableOpacity>
+        }
+        rightButton={
+          <TouchableOpacity onPress={() => signOut()}>
+            <LogOut size={22} color="white" />
+          </TouchableOpacity>
+        }
+        containerClassName="bg-red-700"
+        backgroundColor="red"
+      />
 
       <ScrollView className="flex-1 p-4 bg-gray-100">
         {/* Selector Cancha */}

@@ -187,21 +187,49 @@ export const habilitarCanchaSchema = z.object({
   fechaFin: z.string().optional(),
   horaInicio: z.string().min(1, "Hora inicio requerida"),
   horaFin: z.string().min(1, "Hora fin requerida"),
-  horariosProfesores: z.array(horarioSchemaProfesor).default([]),
+  horariosProfesores: z.array(horarioSchemaProfesor).default([]).optional(),
 })
-  //   
-//   fechaFin: z.string().min(1, "Fecha fin requerida"),
-//   horaInicio: z.string().min(1, "Hora inicio requerida"),
-//   horaFin: z.string().min(1, "Hora fin requerida"),
-//   horariosProfesores: z.array(horarioSchemaProfesor).default([]),
-// }).refine((data) => data.fechaInicio <= data.fechaFin, {
-//   message: "La fecha de inicio debe ser menor o igual a la fecha de fin",
-//   path: ["fechaFin"],
-// }).refine((data) => data.horaInicio < data.horaFin, {
-//   message: "La hora de inicio debe ser menor que la hora de fin",
-//   path: ["horaFin"],
-// });
+
 
 export type HabilitarCanchaForm = z.infer<typeof habilitarCanchaSchema>;
 export type HorarioProfesor = z.infer<typeof horarioSchemaProfesor>;
 export type DiaSemana = "Lunes" | "Martes" | "Miércoles" | "Jueves" | "Viernes" | "Sábado" | "Domingo";
+
+//#######################################################################
+
+export const dniJugadoresSchema = z.object({
+  dni: z
+    .string()
+    .trim()
+    .transform((val) => Number(val))
+    .refine((val) => !isNaN(val), { message: "Debe ser un número válido" })
+    .pipe(
+      z
+        .number()
+        .min(1_000_000, { message: "DNI no valido" })
+        .max(99_999_999, { message: "DNI no valido" })
+    ),
+});
+
+export const jugadoresSchema = z.object({
+  jugadores: z
+    .array(dniJugadoresSchema)
+    .nonempty({ message: "Debe haber al menos un jugador" })
+    .refine(
+      (jugadores) => {
+        const dnis = jugadores.map((j) => j.dni);
+        return new Set(dnis).size === dnis.length;
+      },
+      {
+        message: "No pueden haber DNI duplicados",
+        path: ["jugadores"],
+      }
+    ),
+});
+
+export type Jugador =   {
+  id: string;
+  dni: string;
+}
+
+export type Step = "jugadores" | "pago" | "confirmacion";

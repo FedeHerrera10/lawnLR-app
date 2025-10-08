@@ -24,7 +24,7 @@ const RootLayout = () => {
     return (
         <QueryClientProvider client={queryClient}>
             <UserProvider>
-            <SafeAreaProvider className="mb-2  flex-1" style={{backgroundColor: 'black'}}>
+            <SafeAreaProvider className="  flex-1 mb-2" style={{backgroundColor: 'black'}}>
                 <Slot/>
             </SafeAreaProvider>
             <Toast  position='top'/>

@@ -1,5 +1,5 @@
 import { Cancha } from '@/constants/types'
-import { Check } from 'lucide-react-native'
+import { Check, FlagTriangleLeft } from 'lucide-react-native'
 import React from 'react'
 import { FlatList, Text, TouchableOpacity, View } from 'react-native'
 
@@ -30,8 +30,12 @@ export const FlatListCanchas = ( { data, selectedCancha, setSelectedCancha, setS
     >
       <View>
         <Text className="font-medium text-gray-900">
-          {cancha.nombre}
+        <FlagTriangleLeft size={16} color="#12B981" strokeWidth={2} />  {cancha.nombre}
         </Text>
+        <Text className="font-medium text-sm text-gray-400 ml-3 mt-1">
+          Polvo ladrillo
+        </Text>
+        
       </View>
       {selectedCancha?.id === cancha.id && (
         <Check size={20} color="#10B981" />

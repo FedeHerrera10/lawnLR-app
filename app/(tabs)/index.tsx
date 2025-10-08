@@ -17,7 +17,7 @@ export default function Index() {
   const isAdmin = data.roles[0].name === "ROLE_ADMIN";
 
   return isAdmin ? (
-    <Redirect href="/(tabs)/administracion" />
+    <Redirect href="/(tabs)/dashboard" />
   ) : (
     <Redirect href="/(tabs)/user-home" />
   ); // 👈 esta será tu pantalla de usuario

@@ -37,28 +37,43 @@ export default function CanchaCard({
     <TouchableOpacity
       activeOpacity={0.85}
       onPress={onPress}
-      className="rounded-2xl shadow-xl overflow-hidden mb-4"
+      className="rounded-3xl shadow-2xl overflow-hidden mb-6 bg-white"
     >
       <ImageBackground
         source={imageSource}
         resizeMode="cover"
-        style={{ width: "100%", height: 180 }} // controla tamaño
-        imageStyle={{ borderRadius: 16 }} // borde redondeado en la imagen
+        style={{ width: "100%", height: 180 }}
+        imageStyle={{ borderRadius: 24 }}
       >
-        {/* Overlay negro */}
+        {/* Overlay sutil para mejorar legibilidad */}
         <View
           style={[
             StyleSheet.absoluteFillObject,
-            { backgroundColor: "rgba(0,0,0,0.4)", borderRadius: 16 },
+            {
+              borderRadius: 24,
+              backgroundColor: "rgba(0,0,0,0.35)",
+            },
           ]}
         />
 
+        {/* Badge de superficie */}
+        <View className="absolute top-4 right-4 bg-green-800 px-4 py-2 rounded-full shadow-md">
+          <Text className="text-white text-sm font-semibold">{superficie}</Text>
+        </View>
+
         {/* Contenido */}
-        <View className="p-4 absolute bottom-0 left-0 right-0">
-          <Text className="text-white text-xl font-SoraBold">{nombre}</Text>
-          <Text className="text-white text-md mt-1 font-SoraMedium">
-            {superficie}
+        <View className="p-4 absolute bottom-0 left-4 right-4">
+          <Text
+            className="text-white text-2xl font-SoraBold mb-1"
+            style={{
+              textShadowColor: "rgba(0,0,0,0.8)",
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 4,
+            }}
+          >
+            {nombre}
           </Text>
+          
         </View>
       </ImageBackground>
     </TouchableOpacity>

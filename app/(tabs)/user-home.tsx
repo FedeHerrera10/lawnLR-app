@@ -1,10 +1,12 @@
 import CanchaCard from "@/components/ui/canchaCard";
+import CustomHeader from "@/components/ui/layout/CustomHeader";
+import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import TennisBallLoader from "@/components/ui/Loader";
 import { Cancha } from "@/constants/types";
 import { useAuth } from "@/hooks/useAuth";
 import { getCanchasByDate } from "@/lib/apis/Canchas";
 import { Ionicons } from "@expo/vector-icons";
-import DateTimePicker from "@react-native-community/datetimepicker";
+import RNDateTimePicker from "@react-native-community/datetimepicker";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { LogOut, X } from "lucide-react-native";
@@ -17,7 +19,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 type HorarioSeleccionado = {
   canchaId: number;
@@ -127,17 +128,15 @@ export default function UserReservasScreen() {
   if (!canchas) return <Text>No hay canchas disponibles</Text>;
 
   return (
-    <SafeAreaView className="flex-1 bg-green-700" edges={["top"]}>
-      {/* Header */}
-      <View className="bg-green-700 px-6 py-4 rounded-b-3xl shadow-md flex-row items-center justify-between">
-        <View className="w-6" />
-        <Text className="text-white text-2xl font-SoraBold">
-          Reservar Cancha
-        </Text>
-        <TouchableOpacity onPress={() => signOut()}>
+    <CustomSafeAreaView style={{ flex: 1, backgroundColor: "#15803d" }} >
+      
+      <CustomHeader title="Reservar Cancha" 
+      subtitle="Selecciona la fecha y reserva tu turno 🎾"
+      backgroundColor="green"
+      containerClassName="bg-green-700"
+      rightButton={<TouchableOpacity onPress={() => signOut()}>
           <LogOut size={22} color="white" />
-        </TouchableOpacity>
-      </View>
+        </TouchableOpacity>} /> 
 
       <View className="flex-1 bg-gray-50">
         {/* Date Picker */}
@@ -164,20 +163,26 @@ export default function UserReservasScreen() {
         </View>
 
         {mostrarDatePicker && (
-          <DateTimePicker
-            value={fecha}
-            mode="date"
-            display={Platform.OS === "ios" ? "spinner" : "default"}
-            minimumDate={new Date()}
-            maximumDate={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)}
-            onChange={(_, selectedDate) => {
-              setMostrarDatePicker(false);
-              if (selectedDate) {
-                setFecha(selectedDate);
-                setHorariosSeleccionados([]);
-              }
-            }}
-          />
+          <RNDateTimePicker
+          value={fecha}
+          mode="date"
+          display={Platform.OS === "ios" ? "spinner" : "compact"}
+          minimumDate={new Date()}
+          maximumDate={new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)}
+          onChange={(_, selectedDate) => {
+            setMostrarDatePicker(false);
+            if (selectedDate) {
+              setFecha(selectedDate);
+              setHorariosSeleccionados([]);
+            }
+          }}
+          // Cambios de color
+          themeVariant="dark"           // iOS: asegura estilo claro
+          textColor="green"          // iOS: color del texto/selector
+          accentColor="green"        // Android 13+: color de acento
+
+        
+        />
         )}
 
         {/* Lista de canchas */}
@@ -346,6 +351,6 @@ export default function UserReservasScreen() {
           </Modal>
         )}
       </View>
-    </SafeAreaView>
+    </CustomSafeAreaView>
   );
 }

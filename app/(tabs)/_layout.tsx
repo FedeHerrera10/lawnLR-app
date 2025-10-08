@@ -1,6 +1,6 @@
 import CustomTabBar from "@/components/ui/CustomTabBar";
 import { router, Tabs } from "expo-router";
-import { Calendar, User } from "lucide-react-native";
+import { Calendar, Home, User } from "lucide-react-native";
 import React from "react";
 import { SafeAreaView } from "react-native";
 import TennisBallLoader from "../../components/ui/Loader";
@@ -21,7 +21,7 @@ export default function TabLayout() {
   }
 
   const isAdmin = data.roles?.some((r: any) => r.name === "ROLE_ADMIN");
-  const isUser  = data.roles?.some((r: any) => r.name === "ROLE_USER");
+  const isUser  = data.roles?.some((r: any) => r.name === "ROLE_USUARIO");
 
   const TABSUSER = [
     { name: "user-home", label: "Reserva", icon: Calendar },
@@ -32,6 +32,7 @@ export default function TabLayout() {
   ];
   
   const TABSADMIN = [ 
+    { name: "dashboard", label: "Inicio", icon: Home },
     { name: "administracion", label: "Administracion", icon: Calendar },
     { name: "admin-reservas", label: "Reserva", icon: Calendar },
     { name: "perfil/[id]", label: "Perfil", icon: User , id: data.id},
@@ -43,12 +44,14 @@ export default function TabLayout() {
 
 
   return (
+    
     <SafeAreaView className="h-[95%]">
     <Tabs 
       tabBar={(props) => <CustomTabBar {...props} isUser={isUser} TABS={TABS} />} 
       screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen name="index" />
+      <Tabs.Screen name="dashboard" />
       <Tabs.Screen name="user-home" />
       <Tabs.Screen name="administracion" /> 
       <Tabs.Screen name="mis-reservas" />

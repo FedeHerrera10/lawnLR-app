@@ -1,6 +1,7 @@
 import { DateInput } from "@/components/ui/inputs/DateInput";
 import { FormInput } from "@/components/ui/inputs/FormInput";
 import { NumericInput } from "@/components/ui/inputs/NumericInput";
+import CustomHeader from "@/components/ui/layout/CustomHeader";
 import CustomSafeAreaView from "@/components/ui/layout/CustomSafeAreaView";
 import { CopyrightText } from "@/components/ui/text/CopyrightText";
 import { userUpdate, UserUpdate } from "@/constants/types";
@@ -30,7 +31,6 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 
-// Pantalla de Registro para una app de tenis usando NativeWind + React Hook Form + Zod (schema compartido)
 export default function RegistroTenis() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -89,29 +89,22 @@ export default function RegistroTenis() {
   };
 
   return (
-    <CustomSafeAreaView style={{ flex: 1, backgroundColor: "#15803d" }}>
-      <View
-        className={
-          isAdmin
-            ? "bg-red-700 px-6 py-6 rounded-b-3xl shadow-md"
-            : "bg-green-700 px-6 py-6 rounded-b-3xl shadow-md"
-        }
-      >
-        <View className="flex-row  justify-between items-center">
+    <CustomSafeAreaView
+      style={{ flex: 1, backgroundColor: isAdmin ? "#b91c1c" : "#15803d" }}
+    >
+      <CustomHeader
+        title="Editar Perfil"
+        subtitle="Información personal"
+        leftButton={
           <TouchableOpacity
-            activeOpacity={0.85}
-            onPress={() => router.back()}
-            className="p-1 -ml-2"
+            onPress={() => router.replace(`/(tabs)/perfil/${id}`)}
           >
-            <ArrowLeft size={24} color="white" />
+            <ArrowLeft size={22} color="white" />
           </TouchableOpacity>
-
-          <Text className="text-white text-2xl font-SoraBold">
-            Editar Perfil
-          </Text>
-          <View className="w-6" />
-        </View>
-      </View>
+        }
+        containerClassName={isAdmin ? "bg-red-700" : "bg-green-700"}
+        backgroundColor={isAdmin ? "red" : "green"}
+      />
 
       <SafeAreaView className="flex-1 bg-gray-50 ">
         <KeyboardAvoidingView
@@ -217,7 +210,9 @@ export default function RegistroTenis() {
               <TouchableOpacity
                 onPress={handleSubmit(onSubmit)}
                 disabled={mutation.isPending}
-                className="mt-4 bg-green-700 rounded-xl py-4  shadow-md flex-row gap-2 justify-center items-center"
+                className={`mt-4 ${
+                  isAdmin ? "bg-red-700" : "bg-green-700"
+                } rounded-xl py-4  shadow-md flex-row gap-2 justify-center items-center`}
               >
                 <Text className="text-white font-SoraExtraBold text-lg">
                   {mutation.isPending ? "Actualizando..." : "Actualizar"}

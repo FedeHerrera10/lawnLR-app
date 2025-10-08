@@ -1,9 +1,11 @@
 // app/(tabs)/admin-reservas.tsx
+import CustomHeader from '@/components/ui/layout/CustomHeader';
+import CustomSafeAreaView from '@/components/ui/layout/CustomSafeAreaView';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router/build/imperative-api';
 import { ArrowLeft, Calendar, X } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 // Types
 type ReservationStatus = 'active' | 'canceled' | 'completed';
@@ -124,23 +126,31 @@ export default function AdminReservas() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-100">
-      {/* Header */}
-      <View className="bg-red-700 px-6 py-8 rounded-b-3xl shadow-md">
-        <View className="flex-row mt-8 justify-between items-center">
-        <TouchableOpacity activeOpacity={0.85} className=" " onPress={() => router.push("/(tabs)")}>
-          <ArrowLeft size={22} color="white" style={{  }} />
-        </TouchableOpacity>
-          <Text className="text-white  text-2xl font-SoraExtraBold">Reservas</Text>
-          <View className="flex-row space-x-4">
+    <CustomSafeAreaView style={{ flex: 1 , backgroundColor: '#b91c1c'}}>
+
+      <CustomHeader 
+          title="Reservas" 
+          subtitle="Busca las reservas realizadas" 
+          leftButton={
+            <TouchableOpacity onPress={() => router.back()}>
+              <ArrowLeft size={22} color="white" />
+            </TouchableOpacity>
+          }
+
+          rightButton={
             <TouchableOpacity 
               onPress={() => setMostrarFechaPicker(true)}
-              className="bg-white/20 p-2 rounded-lg"
             >
               <Calendar size={22} color="white" />
             </TouchableOpacity>
-          </View>
-        </View>
+          }
+          
+          containerClassName="bg-red-700" 
+          backgroundColor="red" />
+
+      {/* Header */}
+      <View className="bg-gray-50 px-6 py-2">
+       
 
         {/* Filtro de fecha seleccionada */}
         {selectedDate && (
@@ -235,7 +245,7 @@ export default function AdminReservas() {
       )}
 
       {/* Reservations List */}
-      <ScrollView className="flex-1 p-4">
+      <ScrollView className="flex-1 p-4 bg-gray-50">
         {filteredReservations.length === 0 ? (
           <View className="bg-white rounded-2xl p-6 items-center justify-center mt-8">
             <Text className="text-gray-500 text-center text-lg font-SoraMedium">
@@ -285,6 +295,6 @@ export default function AdminReservas() {
           ))
         )}
       </ScrollView>
-    </SafeAreaView>
+    </CustomSafeAreaView>
   );
 }

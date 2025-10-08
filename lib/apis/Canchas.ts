@@ -62,7 +62,6 @@ export const habilitarCancha = async (data: HabilitarCanchaForm) => {
      
       return response.data;
     } catch (error) {
-      console.log(error);
        if (isAxiosError(error) && error.response) {
         throw error.response.data;
       }
