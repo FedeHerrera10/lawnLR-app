@@ -62,7 +62,7 @@ export default function CanchaCard({
         </View>
 
         {/* Contenido */}
-        <View className="p-4 absolute bottom-0 left-4 right-4">
+        <View className="p-4 absolute bottom-0   left-4 right-4">
           <Text
             className="text-white text-2xl font-SoraBold mb-1"
             style={{

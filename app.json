@@ -13,11 +13,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/splashScreen.gif"
+        "backgroundColor": "#dddddd"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.lawnapp"
     },
     "web": {
       "output": "static",
@@ -28,13 +28,8 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splashScreen.gif",
-          "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          "dark": {
-            "backgroundColor": "#000000"
-          }
+          "backgroundColor": "#ffffff"
         }
       ],
       "expo-font"
@@ -42,6 +37,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d2602e8f-efdc-4eb7-9e85-1653ec6655a9"
+      }
     }
   }
 }
